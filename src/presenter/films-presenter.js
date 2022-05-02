@@ -4,7 +4,6 @@ import SortingView from '../view/sorting-view.js';
 import FilmsListView from '../view/films-list-view.js';
 import FilmCardView from '../view/films-card-view.js';
 import ShowMoreButtonView from '../view/show-more-button-view.js';
-import FilmDetailsView from '../view/film-details-view.js';
 
 import {render} from '../render.js';
 
@@ -13,17 +12,19 @@ export default class FilmsPresenter {
   siteMainElement = document.querySelector('.main');
   siteHeaderElement = document.querySelector('.header');
 
-  init () {
+  init (filmModel) {
+    this.filmModel = filmModel;
+    this.listFilms = [...this.filmModel.getFilms()];
+
     render(new ProfileRatingView(), this.siteHeaderElement);
     render(new NavigationView(), this.siteMainElement);
     render(new SortingView(), this.siteMainElement);
     render(new FilmsListView(), this.siteMainElement);
 
-    for (let i = 0; i < 5; i++) {
-      render(new FilmCardView(), this.siteMainElement.querySelector('.films-list__container'));
+    for (let i = 0; i < this.listFilms.length; i++) {
+      render(new FilmCardView(this.listFilms[i]), this.siteMainElement.querySelector('.films-list__container'));
     }
 
     render(new ShowMoreButtonView(), this.siteMainElement.querySelector('.films-list'));
-    render(new FilmDetailsView(), this.siteBodyElement);
   }
 }
