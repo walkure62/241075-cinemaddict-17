@@ -1,5 +1,6 @@
 import {getRandomInteger, counterId, humanizeDate} from '../utils.js';
 import dayjs from 'dayjs';
+import {generateFilm} from './film.js';
 
 const generateText = () => {
   const texts = [
@@ -20,10 +21,10 @@ const generateText = () => {
 
 const generateEmoji = () => {
   const emojis = [
-    'smile',
-    'sleeping',
-    'puke',
-    'angry',
+    'smile.png',
+    'sleeping.png',
+    'puke.png',
+    'angry.png',
   ];
 
   const randomIndex = getRandomInteger(0, emojis.length - 1);
