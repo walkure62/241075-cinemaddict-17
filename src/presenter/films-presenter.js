@@ -6,8 +6,11 @@ import FilmCardView from '../view/films-card-view.js';
 import ShowMoreButtonView from '../view/show-more-button-view.js';
 import FilmDetailsView from '../view/film-details-view.js';
 import CommentsView from '../view/comments-view.js';
+import NoFilmView from '../view/no-film-view.js';
 
 import {render} from '../render.js';
+
+const FILM_COUNT_PER_STEP = 5;
 
 export default class FilmsPresenter {
   siteBodyElement = document.querySelector('body');
@@ -17,6 +20,8 @@ export default class FilmsPresenter {
   #listFilms = [];
   #filmDetails = null;
   #listComments = [];
+  #showMoreButton = null;
+  #renderedFilmCount = FILM_COUNT_PER_STEP;
 
 
   init (filmModel) {
@@ -24,18 +29,42 @@ export default class FilmsPresenter {
     this.#listFilms = [...this.#filmModel.getFilms()];
     this.#filmDetails = this.#filmModel.getFilmDetails();
     this.#listComments = [...this.#filmModel.getComments()];
+    this.#showMoreButton = new ShowMoreButtonView();
 
     render(new ProfileRatingView(), this.siteHeaderElement);
     render(new NavigationView(), this.siteMainElement);
     render(new SortingView(), this.siteMainElement);
     render(new FilmsListView(), this.siteMainElement);
 
-    for (let i = 0; i < this.#listFilms.length; i++) {
-      this.#renderFilm(this.#listFilms[i]);
-    }
+    if(this.#listFilms.length === 0) {
+      render(new NoFilmView(), this.siteMainElement.querySelector('.films-list__container'));
+    } else {
+      for (let i = 0; i < Math.min(this.#listFilms.length, FILM_COUNT_PER_STEP); i++) {
+        this.#renderFilm(this.#listFilms[i]);
+      }
 
-    render(new ShowMoreButtonView(), this.siteMainElement.querySelector('.films-list'));
+      if (this.#listFilms.length > FILM_COUNT_PER_STEP) {
+
+        render(this.#showMoreButton, this.siteMainElement.querySelector('.films-list'));
+
+        this.#showMoreButton.element.addEventListener('click', this.#handleShowMoreButtonClick);
+      }
+    }
   }
+
+  #handleShowMoreButtonClick = (evt) => {
+    evt.preventDefault();
+    this.#listFilms
+      .slice(this.#renderedFilmCount, this.#renderedFilmCount + FILM_COUNT_PER_STEP)
+      .forEach((film) => this.#renderFilm(film));
+
+    this.#renderedFilmCount += FILM_COUNT_PER_STEP;
+
+    if (this.#renderedFilmCount >= this.#listFilms.length) {
+      this.#showMoreButton.element.remove();
+      this.#showMoreButton.removeElement();
+    }
+  };
 
   #renderFilm = (film) => {
     const filmComponent = new FilmCardView(film);

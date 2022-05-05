@@ -60,5 +60,5 @@ export const generateComment = () => ({
   emoji: `./images/emoji/${generateEmoji()}`,
   author: generateAuthor(),
   date: humanizeDate(generateDate()),
-  numberOfComments: getRandomInteger(1, 10),
+  numberOfComments: generateFilm().comments.length,
 });
