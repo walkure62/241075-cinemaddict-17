@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const createNewNavigationTemplate = () =>
   `<nav class="main-navigation">
@@ -8,22 +8,10 @@ const createNewNavigationTemplate = () =>
     <a href="#favorites" class="main-navigation__item">Favorites <span class="main-navigation__item-count">8</span></a>
   </nav>`;
 
-export default class NavigationView {
-  #element = null;
+export default class NavigationView extends AbstractView {
 
   get template() {
     return createNewNavigationTemplate();
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
-  }
 }

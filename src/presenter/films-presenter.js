@@ -47,13 +47,12 @@ export default class FilmsPresenter {
 
         render(this.#showMoreButton, this.siteMainElement.querySelector('.films-list'));
 
-        this.#showMoreButton.element.addEventListener('click', this.#handleShowMoreButtonClick);
+        this.#showMoreButton.setClickHandler(this.#handleShowMoreButtonClick);
       }
     }
   }
 
-  #handleShowMoreButtonClick = (evt) => {
-    evt.preventDefault();
+  #handleShowMoreButtonClick = () => {
     this.#listFilms
       .slice(this.#renderedFilmCount, this.#renderedFilmCount + FILM_COUNT_PER_STEP)
       .forEach((film) => this.#renderFilm(film));
@@ -89,12 +88,11 @@ export default class FilmsPresenter {
       document.removeEventListener('keydown', onEscKeyDown);
     };
 
-    filmComponent.element.addEventListener('click', () => {
+    filmComponent.setClickHandler(() => {
       addPopup();
     });
 
-    filmDetaisComponent.element.querySelector('.film-details__close-btn').addEventListener('click', (evt) => {
-      evt.preventDefault();
+    filmDetaisComponent.setClickHandler(() => {
       removePopup();
     });
 

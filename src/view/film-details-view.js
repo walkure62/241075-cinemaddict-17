@@ -1,4 +1,4 @@
-import { createElement } from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const createDetailedInformationTemplate = (film) => {
   const {title, description, image, time, rating, genre, numberOfComments, originalTitle, director, writers, actors, release, country, ageRating} = film;
@@ -112,11 +112,11 @@ const createDetailedInformationTemplate = (film) => {
   </section>`;
 };
 
-export default class FilmDetailsView {
+export default class FilmDetailsView extends AbstractView {
   #film = null;
-  #element = null;
 
   constructor(film) {
+    super();
     this.#film = film;
   }
 
@@ -124,15 +124,14 @@ export default class FilmDetailsView {
     return createDetailedInformationTemplate(this.#film);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
+  setClickHandler(callback) {
+    this._callback.click = callback;
+    this.element.addEventListener('click', this.#clickHandler);
   }
 
-  removeElement() {
-    this.#element = null;
-  }
+  #clickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.click();
+  };
+
 }
