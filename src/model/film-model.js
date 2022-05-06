@@ -6,7 +6,7 @@ import { getRandomInteger } from '../utils.js';
 export default class FilmsModel {
   #films = Array.from({length: `${getRandomInteger(0, 25)}`}, generateFilm);
   #filmDetails = generateFilmDetails();
-  #comments = Array.from({length: `${getRandomInteger(1, 10)}`}, generateComment);
+  #comments = Array.from({length: `${getRandomInteger(0, 5)}`}, generateComment);
 
   getFilmDetails = () => this.#filmDetails;
   getComments = () => this.#comments;
