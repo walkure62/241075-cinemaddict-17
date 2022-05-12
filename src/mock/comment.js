@@ -1,4 +1,5 @@
-import {getRandomInteger, counterId, humanizeDate} from '../utils.js';
+import {getRandomInteger, counterId} from '../utils/common.js';
+import {humanizeDate} from '../utils/film.js';
 import dayjs from 'dayjs';
 import {generateFilm} from './film.js';
 

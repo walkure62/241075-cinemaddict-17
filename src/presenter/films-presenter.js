@@ -7,8 +7,9 @@ import ShowMoreButtonView from '../view/show-more-button-view.js';
 import FilmDetailsView from '../view/film-details-view.js';
 import CommentsView from '../view/comments-view.js';
 import NoFilmView from '../view/no-film-view.js';
+import {generateFilter} from '../mock/filter.js';
 
-import {render} from '../render.js';
+import {render, remove} from '../framework/render.js';
 
 const FILM_COUNT_PER_STEP = 5;
 
@@ -18,21 +19,21 @@ export default class FilmsPresenter {
   siteHeaderElement = document.querySelector('.header');
   #filmModel = null;
   #listFilms = [];
-  #filmDetails = null;
   #listComments = [];
   #showMoreButton = null;
   #renderedFilmCount = FILM_COUNT_PER_STEP;
+  #filters = null;
 
 
   init (filmModel) {
     this.#filmModel = filmModel;
     this.#listFilms = [...this.#filmModel.getFilms()];
-    this.#filmDetails = this.#filmModel.getFilmDetails();
     this.#listComments = [...this.#filmModel.getComments()];
     this.#showMoreButton = new ShowMoreButtonView();
+    this.#filters = generateFilter(this.#listFilms);
 
     render(new ProfileRatingView(), this.siteHeaderElement);
-    render(new NavigationView(), this.siteMainElement);
+    render(new NavigationView(this.#filters), this.siteMainElement);
     render(new SortingView(), this.siteMainElement);
     render(new FilmsListView(), this.siteMainElement);
 
@@ -60,8 +61,7 @@ export default class FilmsPresenter {
     this.#renderedFilmCount += FILM_COUNT_PER_STEP;
 
     if (this.#renderedFilmCount >= this.#listFilms.length) {
-      this.#showMoreButton.element.remove();
-      this.#showMoreButton.removeElement();
+      remove(this.#showMoreButton);
     }
   };
 
