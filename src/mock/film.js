@@ -1,4 +1,5 @@
-import {getRandomInteger, counterId} from '../utils.js';
+import {getRandomInteger, counterId} from '../utils/common.js';
+import dayjs from 'dayjs';
 
 const generateDescription = () => {
   const descriptions = [
@@ -64,11 +65,62 @@ const generateGenre = () => {
   return genres[randomIndex];
 };
 
+const generateName = () => {
+  const names = [
+    'Andrew Hokking',
+    'Alex Fox',
+    'Paul Digros',
+    'Sam Pollis',
+    'Viktor Gaash',
+    'Alexa Qwergy',
+  ];
+  const randomIndex = getRandomInteger(0, names.length - 1);
+
+  return names[randomIndex];
+};
+
+const generateCountry = () => {
+  const countries = [
+    'Italy',
+    'USA',
+    'Turkey',
+    'Canada',
+    'Spain',
+    'Finland',
+  ];
+  const randomIndex = getRandomInteger(0, countries.length - 1);
+
+  return countries[randomIndex];
+};
+
+const generateReleaseDate = () => {
+  const minDaysGap = 2000;
+  const daysGap = getRandomInteger(-minDaysGap, 0);
+
+  return dayjs().add(daysGap, 'day').toDate();
+};
+
+const generateAgeRating = () => {
+  const ages = [
+    '18+',
+    '16+',
+    '14+',
+    '0+',
+    '7+',
+  ];
+  const randomIndex = getRandomInteger(0, ages.length - 1);
+
+  return ages[randomIndex];
+};
+
 const generateComments = () => Array.from({length: `${getRandomInteger(1, 7)}`}, () => getRandomInteger(1, 7));
 
 export const generateFilm = () => {
   const film = {
     id: counterId(),
+    isWatchlist: Boolean(getRandomInteger(0, 1)),
+    isHistory: Boolean(getRandomInteger(0, 1)),
+    isFavorite: Boolean(getRandomInteger(0, 1)),
     image: `./images/posters/${generateImage()}`,
     title: generateTitle(),
     rating: (getRandomInteger(200, 900) / 100).toFixed(1),
@@ -77,6 +129,13 @@ export const generateFilm = () => {
     genre: generateGenre(),
     description: generateDescription(),
     comments: generateComments(),
+    originalTitle: generateTitle(),
+    director: generateName(),
+    writers: generateName(),
+    actors: generateName(),
+    release: generateReleaseDate(),
+    country: generateCountry(),
+    ageRating: generateAgeRating(),
   };
 
   film.numberOfComments = film.comments.length;
