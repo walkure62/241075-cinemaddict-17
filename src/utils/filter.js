@@ -1,5 +1,4 @@
 import {FilterType} from '../const';
-//import {isFilmInHistory, isFilmInWatchlist, isFilmFavorite} from './film';
 
 const filter = {
   [FilterType.ALL]: (films) => films,

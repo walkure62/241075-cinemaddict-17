@@ -1,7 +1,7 @@
-import FilmsPresenter from './presenter/films-presenter.js';
+import GalleryPresenter from './presenter/gallery-presenter.js';
 import FilmsModel from './model/film-model.js';
 
 const filmModel = new FilmsModel();
-const renderFilms = new FilmsPresenter();
+const renderGallery = new GalleryPresenter(filmModel);
 
-renderFilms.init(filmModel);
+renderGallery.init();
