@@ -2,7 +2,7 @@ import AbstractView from '../framework/view/abstract-view.js';
 import { humanizeReleaseDate } from '../utils/film.js';
 
 const createDetailedInformationTemplate = (film) => {
-  const {title, description, image, time, rating, genre, numberOfComments, originalTitle, director, writers, actors, release, country, ageRating} = film;
+  const {filmInfo, numberOfComments} = film;
 
   return `
 <section class="film-details">
@@ -13,56 +13,56 @@ const createDetailedInformationTemplate = (film) => {
     </div>
     <div class="film-details__info-wrap">
       <div class="film-details__poster">
-        <img class="film-details__poster-img" src="${image}" alt="">
+        <img class="film-details__poster-img" src="${filmInfo.poster}" alt="">
 
-        <p class="film-details__age">${ageRating}</p>
+        <p class="film-details__age">${filmInfo.ageRating}</p>
       </div>
 
       <div class="film-details__info">
         <div class="film-details__info-head">
           <div class="film-details__title-wrap">
-            <h3 class="film-details__title">${title}</h3>
-            <p class="film-details__title-original">Original: ${originalTitle}</p>
+            <h3 class="film-details__title">${filmInfo.title}</h3>
+            <p class="film-details__title-original">Original: ${filmInfo.alternativeTitle}</p>
           </div>
 
           <div class="film-details__rating">
-            <p class="film-details__total-rating">${rating}</p>
+            <p class="film-details__total-rating">${filmInfo.totalRating}</p>
           </div>
         </div>
 
         <table class="film-details__table">
           <tr class="film-details__row">
             <td class="film-details__term">Director</td>
-            <td class="film-details__cell">${director}</td>
+            <td class="film-details__cell">${filmInfo.director}</td>
           </tr>
           <tr class="film-details__row">
             <td class="film-details__term">Writers</td>
-            <td class="film-details__cell">${writers}</td>
+            <td class="film-details__cell">${filmInfo.writers}</td>
           </tr>
           <tr class="film-details__row">
             <td class="film-details__term">Actors</td>
-            <td class="film-details__cell">${actors}</td>
+            <td class="film-details__cell">${filmInfo.actors}</td>
           </tr>
           <tr class="film-details__row">
             <td class="film-details__term">Release Date</td>
-            <td class="film-details__cell">${humanizeReleaseDate(release)}</td>
+            <td class="film-details__cell">${humanizeReleaseDate(filmInfo.release.date)}</td>
           </tr>
           <tr class="film-details__row">
             <td class="film-details__term">Runtime</td>
-            <td class="film-details__cell">${time}</td>
+            <td class="film-details__cell">${filmInfo.runtime}</td>
           </tr>
           <tr class="film-details__row">
             <td class="film-details__term">Country</td>
-            <td class="film-details__cell">${country}</td>
+            <td class="film-details__cell">${filmInfo.release.country}</td>
           </tr>
           <tr class="film-details__row">
             <td class="film-details__term">Genres</td>
             <td class="film-details__cell">
-              <span class="film-details__genre">${genre}</span></td>
+              <span class="film-details__genre">${filmInfo.genre}</span></td>
           </tr>
         </table>
 
-        <p class="film-details__film-description">${description}</p>
+        <p class="film-details__film-description">${filmInfo.description}</p>
       </div>
     </div>
 

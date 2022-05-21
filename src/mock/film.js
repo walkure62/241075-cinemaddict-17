@@ -1,5 +1,6 @@
-import {getRandomInteger, counterId} from '../utils/common.js';
+import {getRandomInteger} from '../utils/common.js';
 import dayjs from 'dayjs';
+import { nanoid }from 'nanoid';
 
 const generateDescription = () => {
   const descriptions = [
@@ -117,25 +118,31 @@ const generateComments = () => Array.from({length: `${getRandomInteger(1, 7)}`},
 
 export const generateFilm = () => {
   const film = {
-    id: counterId(),
-    isWatchlist: Boolean(getRandomInteger(0, 1)),
-    isHistory: Boolean(getRandomInteger(0, 1)),
-    isFavorite: Boolean(getRandomInteger(0, 1)),
-    image: `./images/posters/${generateImage()}`,
-    title: generateTitle(),
-    rating: (getRandomInteger(200, 900) / 100).toFixed(1),
-    year: getRandomInteger(1995, 2000),
-    time: `${getRandomInteger(1, 3)}h ${getRandomInteger(10, 40)}m`,
-    genre: generateGenre(),
-    description: generateDescription(),
+    id: nanoid(),
     comments: generateComments(),
-    originalTitle: generateTitle(),
-    director: generateName(),
-    writers: generateName(),
-    actors: generateName(),
-    release: generateReleaseDate(),
-    country: generateCountry(),
-    ageRating: generateAgeRating(),
+    filmInfo: {
+      title: generateTitle(),
+      alternativeTitle: generateTitle(),
+      year: getRandomInteger(1995, 2000),
+      totalRating: (getRandomInteger(200, 900) / 100).toFixed(1),
+      poster: `./images/posters/${generateImage()}`,
+      ageRating: generateAgeRating(),
+      director: generateName(),
+      writers: generateName(),
+      actors: generateName(),
+      release: {
+        date: generateReleaseDate(),
+        country: generateCountry(),
+      },
+      runtime: `${getRandomInteger(1, 3)}h ${getRandomInteger(10, 40)}m`,
+      genre: generateGenre(),
+      description: generateDescription(),
+    },
+    userDetails: {
+      isWatchlist: Boolean(getRandomInteger(0, 1)),
+      isHistory: Boolean(getRandomInteger(0, 1)),
+      isFavorite: Boolean(getRandomInteger(0, 1)),
+    }
   };
 
   film.numberOfComments = film.comments.length;

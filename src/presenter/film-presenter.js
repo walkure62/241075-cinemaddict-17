@@ -10,7 +10,7 @@ const Mode = {
 
 export default class FilmPresenter {
   siteBodyElement = document.querySelector('body');
-  #filmListContainer = null;
+  #filmContainer = null;
   #changeData = null;
   #changeMode = null;
 
@@ -22,16 +22,16 @@ export default class FilmPresenter {
   #mode = Mode.DEFAULT;
   #listComments = [];
 
-  constructor(filmListContainer, filmModel, changeData, changeMode) {
-    this.#filmListContainer = filmListContainer;
+  constructor(filmContainer, filmModel, changeData, changeMode) {
+    this.#filmContainer = filmContainer;
     this.#filmModel = filmModel;
+    this.#listComments = [...this.#filmModel.comments];
     this.#changeData = changeData;
     this.#changeMode = changeMode;
   }
 
   init = (film) => {
     this.#film = film;
-    this.#listComments = [...this.#filmModel.getComments()];
 
     const prevFilmComponent = this.#filmComponent;
     const prevFilmDetaisComponent = this.#filmDetaisComponent;
@@ -39,20 +39,17 @@ export default class FilmPresenter {
     this.#filmComponent = new FilmCardView(film);
     this.#filmDetaisComponent = new FilmDetailsView(film);
 
-    this.#filmComponent.setClickHandler(this.#handlePopupOpen);
-    this.#filmDetaisComponent.setClickHandler(this.#handlePopupClose);
     this.#filmComponent.setWatchListClickHandler(this.#handleWatchListClick);
     this.#filmComponent.setHistoryClickHandler(this.#handleHistoryClick);
     this.#filmComponent.setFavoriteClickHandler(this.#handleFavoritesClick);
-    this.#filmDetaisComponent.setWatchListClickHandler(this.#handleWatchListClick);
-    this.#filmDetaisComponent.setHistoryClickHandler(this.#handleHistoryClick);
-    this.#filmDetaisComponent.setFavoriteClickHandler(this.#handleFavoritesClick);
+    this.#filmComponent.setClickHandler(this.#handlePopupOpen);
+    this.#filmDetaisComponent.setClickHandler(this.#handlePopupClose);
 
 
-    render(this.#filmComponent, this.#filmListContainer);
+    render(this.#filmComponent, this.#filmContainer);
 
     if (prevFilmComponent === null || prevFilmDetaisComponent === null) {
-      render(this.#filmComponent, this.#filmListContainer);
+      render(this.#filmComponent, this.#filmContainer);
       return;
     }
 
@@ -87,6 +84,9 @@ export default class FilmPresenter {
   #addPopup = () => {
     this.siteBodyElement.classList.add('hide-overflow');
     this.siteBodyElement.appendChild(this.#filmDetaisComponent.element);
+    this.#filmDetaisComponent.setWatchListClickHandler(this.#handleWatchListClick);
+    this.#filmDetaisComponent.setHistoryClickHandler(this.#handleHistoryClick);
+    this.#filmDetaisComponent.setFavoriteClickHandler(this.#handleFavoritesClick);
     for (let i = 0; i < this.#listComments.length; i++) {
       this.#renderComment(this.#listComments[i]);
     }
@@ -114,16 +114,16 @@ export default class FilmPresenter {
     }
   };
 
-  #handleFavoritesClick = () => {
-    this.#changeData({...this.#film, isFavorite: !this.#film.isFavorite});
+  #handleWatchListClick = () => {
+    this.#changeData({...this.#film, userDetails: {...this.#film.userDetails, isWatchlist: !this.#film.userDetails.isWatchlist}});
   };
 
   #handleHistoryClick = () => {
-    this.#changeData({...this.#film, isHistory: !this.#film.isHistory});
+    this.#changeData({...this.#film, userDetails: {...this.#film.userDetails, isHistory: !this.#film.userDetails.isHistory}});
   };
 
-  #handleWatchListClick = () => {
-    this.#changeData({...this.#film, isWatchlist: !this.#film.isWatchlist});
+  #handleFavoritesClick = () => {
+    this.#changeData({...this.#film, userDetails: {...this.#film.userDetails, isFavorite: !this.#film.userDetails.isFavorite}});
   };
 
   #handlePopupOpen = () => {

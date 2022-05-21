@@ -1,15 +1,15 @@
 import AbstractView from '../framework/view/abstract-view.js';
 
-const createCommentTemplate = (comment) => {
-  const {text, emoji, author, date} = comment;
+const createCommentTemplate = (message) => {
+  const {comment, emotion, author, date} = message;
 
   return `
     <li class="film-details__comment">
       <span class="film-details__comment-emoji">
-        <img src="${emoji}" width="55" height="55" alt="emoji-angry">
+        <img src="${emotion}" width="55" height="55" alt="emoji-angry">
       </span>
       <div>
-        <p class="film-details__comment-text">${text}</p>
+        <p class="film-details__comment-text">${comment}</p>
         <p class="film-details__comment-info">
           <span class="film-details__comment-author">${author}</span>
           <span class="film-details__comment-day">${date}</span>
