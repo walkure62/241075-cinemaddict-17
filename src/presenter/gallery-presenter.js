@@ -6,7 +6,7 @@ import ShowMoreButtonView from '../view/show-more-button-view.js';
 import NoFilmView from '../view/no-film-view.js';
 import FilmPresenter from './film-presenter.js';
 import {generateFilter} from '../mock/filter.js';
-import {render, remove} from '../framework/render.js';
+import {render, remove, RenderPosition} from '../framework/render.js';
 import {updateItem} from '../utils/common.js';
 import {sortingByRating, sortingByDate, sortingMostCommented} from '../utils/sorting.js';
 import {SortType} from '../const.js';
@@ -37,17 +37,16 @@ export default class GalleryPresenter {
 
   constructor(filmModel) {
     this.#filmModel = filmModel;
-    this.#listFilms = [...this.#filmModel.films];
-    this.#listFilters = generateFilter(this.#listFilms);
-    this.#topRatedFilms = sortingByRating(this.#listFilms.slice()).slice(0,EXTRA_CARDS_COUNT);
-    this.#mostCommentedFilms = sortingMostCommented(this.#listFilms.slice()).slice(0,EXTRA_CARDS_COUNT);
   }
 
   init = () => {
-    this.#renderGallery();
     this.#listFilms = [...this.#filmModel.films];
     this.#listFilters = generateFilter(this.#listFilms);
     this.#sourcedGalleryFilms = [...this.#filmModel.films];
+    this.#topRatedFilms = sortingByRating(this.#listFilms.slice()).slice(0,EXTRA_CARDS_COUNT);
+    this.#mostCommentedFilms = sortingMostCommented(this.#listFilms.slice()).slice(0,EXTRA_CARDS_COUNT);
+
+    this.#renderGallery();
   };
 
   #handleShowMoreButtonClick = () => {
@@ -104,10 +103,10 @@ export default class GalleryPresenter {
     render(this.#profileRating, this.siteHeaderElement);
   };
 
-  #renderNavigation = () => {
-    this.#navigation = new NavigationView(this.#listFilters);
+  #renderNavigation = (listFilters) => {
+    this.#navigation = new NavigationView(listFilters);
 
-    render(this.#navigation, this.siteMainElement);
+    render(this.#navigation, this.siteMainElement, RenderPosition.AFTERBEGIN);
   };
 
   #handleSortTypeChange = (sortType) => {
@@ -122,6 +121,9 @@ export default class GalleryPresenter {
   };
 
   #renderSorting = () => {
+    if(this.#listFilms.length === 0) {
+      return;
+    }
     render(this.#sorting, this.siteMainElement);
     this.#sorting.setSortTypeChangeHandler(this.#handleSortTypeChange);
   };
@@ -150,11 +152,13 @@ export default class GalleryPresenter {
     this.#sourcedGalleryFilms = updateItem(this.#sourcedGalleryFilms, updatedFilm);
     this.#filmPresenter.get(updatedFilm.id).init(updatedFilm);
     this.#listFilters = generateFilter(this.#listFilms);
+    remove(this.#navigation);
+    this.#renderNavigation(this.#listFilters);
   };
 
   #renderGallery = () => {
     this.#renderProfile();
-    this.#renderNavigation();
+    this.#renderNavigation(this.#listFilters);
     this.#renderSorting();
     this.#renderFilmsList();
 

@@ -42,8 +42,8 @@ export default class FilmPresenter {
     this.#filmComponent.setWatchListClickHandler(this.#handleWatchListClick);
     this.#filmComponent.setHistoryClickHandler(this.#handleHistoryClick);
     this.#filmComponent.setFavoriteClickHandler(this.#handleFavoritesClick);
-    this.#filmComponent.setClickHandler(this.#handlePopupOpen);
-    this.#filmDetaisComponent.setClickHandler(this.#handlePopupClose);
+    this.#filmComponent.setOpenClickHandler(this.#handlePopupOpen);
+    this.#filmDetaisComponent.setCloseClickHandler(this.#handlePopupClose);
 
 
     render(this.#filmComponent, this.#filmContainer);
@@ -82,6 +82,9 @@ export default class FilmPresenter {
   };
 
   #addPopup = () => {
+    if (this.siteBodyElement.classList.contains('hide-overflow')) {
+      return;
+    }
     this.siteBodyElement.classList.add('hide-overflow');
     this.siteBodyElement.appendChild(this.#filmDetaisComponent.element);
     this.#filmDetaisComponent.setWatchListClickHandler(this.#handleWatchListClick);
