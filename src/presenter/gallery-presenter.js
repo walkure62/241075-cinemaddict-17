@@ -106,7 +106,7 @@ export default class GalleryPresenter {
 
   #renderNavigation = () => {
     this.#navigation = new NavigationView(this.#listFilters);
-    console.log(this.#listFilters);
+
     render(this.#navigation, this.siteMainElement);
   };
 
@@ -150,8 +150,6 @@ export default class GalleryPresenter {
     this.#sourcedGalleryFilms = updateItem(this.#sourcedGalleryFilms, updatedFilm);
     this.#filmPresenter.get(updatedFilm.id).init(updatedFilm);
     this.#listFilters = generateFilter(this.#listFilms);
-    console.log(updatedFilm);
-    console.log(this.#listFilters);
   };
 
   #renderGallery = () => {
