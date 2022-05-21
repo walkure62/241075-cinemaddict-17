@@ -6,6 +6,11 @@ export default class FilmsModel {
   #films = Array.from({length: `${getRandomInteger(0, 25)}`}, generateFilm);
   #comments = Array.from({length: `${getRandomInteger(0, 5)}`}, generateComment);
 
-  getComments = () => this.#comments;
-  getFilms = () => this.#films;
+  get comments () {
+    return this.#comments;
+  }
+
+  get films () {
+    return this.#films;
+  }
 }

@@ -57,9 +57,9 @@ const generateDate = () => {
 
 export const generateComment = () => ({
   id: counterId(),
-  text: generateText(),
-  emoji: `./images/emoji/${generateEmoji()}`,
   author: generateAuthor(),
+  comment: generateText(),
   date: humanizeDate(generateDate()),
+  emotion: `./images/emoji/${generateEmoji()}`,
   numberOfComments: generateFilm().comments.length,
 });
