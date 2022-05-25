@@ -1,7 +1,19 @@
 import AbstractView from '../framework/view/abstract-view.js';
 
 const createFilmCardTemplate = (film) => {
-  const {filmInfo, numberOfComments, id} = film;
+  const {filmInfo, numberOfComments, id, userDetails} = film;
+
+  const watchlistClassName = userDetails.isWatchlist
+    ? 'film-card__controls-item--active'
+    : '';
+
+  const historyClassName = userDetails.isHistory
+    ? 'film-card__controls-item--active'
+    : '';
+
+  const favoriteClassName = userDetails.isFavorite
+    ? 'film-card__controls-item--active'
+    : '';
 
   return `<article class="film-card" id="${id}">
     <a class="film-card__link">
@@ -10,16 +22,16 @@ const createFilmCardTemplate = (film) => {
       <p class="film-card__info">
         <span class="film-card__year">${filmInfo.year}</span>
         <span class="film-card__duration">${filmInfo.runtime}</span>
-        <span class="film-card__genre">${filmInfo.genre}</span>
+        <span class="film-card__genre">${filmInfo.genre[0]}</span>
       </p>
       <img src="${filmInfo.poster}" alt="" class="film-card__poster">
       <p class="film-card__description">${filmInfo.description}</p>
       <span class="film-card__comments">${numberOfComments} comments</span>
     </a>
     <div class="film-card__controls">
-    <button class="film-card__controls-item film-card__controls-item--add-to-watchlist film-card__controls-item--active" type="button">Add to watchlist</button>
-    <button class="film-card__controls-item film-card__controls-item--mark-as-watched film-card__controls-item--active" type="button">Mark as watched</button>
-    <button class="film-card__controls-item film-card__controls-item--favorite film-card__controls-item--active" type="button">Mark as favorite</button>
+    <button class="film-card__controls-item film-card__controls-item--add-to-watchlist ${watchlistClassName}" type="button">Add to watchlist</button>
+    <button class="film-card__controls-item film-card__controls-item--mark-as-watched ${historyClassName}" type="button">Mark as watched</button>
+    <button class="film-card__controls-item film-card__controls-item--favorite ${favoriteClassName}" type="button">Mark as favorite</button>
     </div>
   </article>`;
 
@@ -68,16 +80,19 @@ export default class FilmCardView extends AbstractView {
 
   #clickFavorite = (evt) => {
     evt.preventDefault();
+    evt.target.classList.toggle('film-card__controls-item--active');
     this._callback.favoriteClick();
   };
 
   #clickHistory = (evt) => {
     evt.preventDefault();
+    evt.target.classList.toggle('film-card__controls-item--active');
     this._callback.historyClick();
   };
 
   #clickWatchList = (evt) => {
     evt.preventDefault();
+    evt.target.classList.toggle('film-card__controls-item--active');
     this._callback.watchListClick();
   };
 }

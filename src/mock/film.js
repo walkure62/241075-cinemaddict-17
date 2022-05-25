@@ -51,7 +51,8 @@ const generateTitle = () => {
   return titles[randomIndex];
 };
 
-const generateGenre = () => {
+const generateGenre = (count) => {
+  const genresList = [];
   const genres = [
     'Comedy',
     'Drama',
@@ -60,10 +61,13 @@ const generateGenre = () => {
     'Cartoon',
     'Musical',
   ];
+  for (let i = 0; i <= count; i++) {
+    const randomIndex = getRandomInteger(0, genres.length - 1);
 
-  const randomIndex = getRandomInteger(0, genres.length - 1);
+    genresList.push(genres[randomIndex]);
+  }
 
-  return genres[randomIndex];
+  return genresList;
 };
 
 const generateName = () => {
@@ -135,7 +139,7 @@ export const generateFilm = () => {
         country: generateCountry(),
       },
       runtime: `${getRandomInteger(1, 3)}h ${getRandomInteger(10, 40)}m`,
-      genre: generateGenre(),
+      genre: generateGenre(getRandomInteger(0, 3)),
       description: generateDescription(),
     },
     userDetails: {

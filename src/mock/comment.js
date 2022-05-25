@@ -22,10 +22,10 @@ const generateText = () => {
 
 const generateEmoji = () => {
   const emojis = [
-    'smile.png',
-    'sleeping.png',
-    'puke.png',
-    'angry.png',
+    'smile',
+    'sleeping',
+    'puke',
+    'angry',
   ];
 
   const randomIndex = getRandomInteger(0, emojis.length - 1);
@@ -60,6 +60,6 @@ export const generateComment = () => ({
   author: generateAuthor(),
   comment: generateText(),
   date: humanizeDate(generateDate()),
-  emotion: `./images/emoji/${generateEmoji()}`,
+  emotion: `${generateEmoji()}`,
   numberOfComments: generateFilm().comments.length,
 });
