@@ -4,27 +4,27 @@ import { nanoid }from 'nanoid';
 
 const BLANK_FILM = {
   filmInfo: {
-    title: 'RandomTitle',
-    alternativeTitle: 'RandomTitle',
-    totalRating: 5.0,
+    title: 'Title',
+    alternativeTitle: 'Origin title',
+    totalRating: 8.0,
     poster: 'images/posters/the-man-with-the-golden-arm.jpg',
-    ageRating: 18,
-    director: 'Tim Burton',
-    writers: 'Tim Burton',
-    actors: 'Tim Burton',
+    ageRating: 16,
+    director: 'Александр Петров',
+    writers: 'Александр Петров',
+    actors: 'Александр Петров',
     release: {
       date: 2022,
-      releaseCountry: 'USA',
+      releaseCountry: 'Russia',
     },
     runtime: 80,
     genre: 'Horror',
-    description: 'Arthur Fleck works as a clown and is an aspiring stand-up comic. He has mental health issues, part of which involves uncontrollable laughter. Times are tough and, due to his issues and occupation, Arthur has an even worse time than most. Over time these issues bear down on him, shaping his actions, making him ultimately take on the persona he is more known as...Joker.'
+    description: 'Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.'
   },
   userDetails: {
-    watchlist: true,
-    alreadyWatched: false,
+    isWatchlist: true,
+    isHistory: false,
     watchingDate: '2019-04-12T16:12:32.554Z',
-    favorite: false
+    isFavorite: false
   },
 };
 
@@ -59,13 +59,14 @@ const createDetailedInformationTemplate = (film = BLANK_FILM, comments, emojiSel
       `;
   };
 
-  const generateComments = (arr) => arr.reduce((acc, elem) => `${acc} ${createCommentTemplate(elem)}`, '');
+  const generateComments = (arr) => arr.map((elem) => createCommentTemplate(elem));
   const showTypedComment = (comment) => comment ? `<textarea class='film-details__comment-input' name='comment'>${comment}</textarea>` : '<textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment"></textarea>';
+  const showSelectedEmoji = (emoji) => emoji ? `<img src="./images/emoji/${emoji}.png" width="55" height="55" alt="emoji">` : '';
 
   const createNewCommentTemplate = () => `
     <div class="film-details__new-comment">
       <div class="film-details__add-emoji-label">
-      ${emojiSelected ? `<img src="./images/emoji/${emojiSelected}.png" width="55" height="55" alt="${emojiSelected}">` : ''}
+      ${showSelectedEmoji(emojiSelected)}
       </div>
       <label class="film-details__comment-label">
       ${showTypedComment(typedComment)}
@@ -165,7 +166,7 @@ const createDetailedInformationTemplate = (film = BLANK_FILM, comments, emojiSel
   <div class="film-details__bottom-container">
       <section class="film-details__comments-wrap">
         <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${numberOfComments}</span></h3>
-        <ul class="film-details__comments-list">${generateComments(comments)}</ul>
+        <ul class="film-details__comments-list">${comments.length === 0 ? '' : generateComments(comments)}</ul>
         ${createNewCommentTemplate()}
       </section>
     </div>
@@ -177,9 +178,10 @@ export default class FilmDetailsView extends AbstractStatefulView {
 
   constructor(film, comments) {
     super();
+    console.log(comments);
     this._state = FilmDetailsView.parseFilmToState(film, comments);
+    console.log(this._state);
     this.#setInnerHandlers();
-    console.log(this._state.comments);
   }
 
   get template() {
@@ -245,19 +247,19 @@ export default class FilmDetailsView extends AbstractStatefulView {
   #submitFormHandler = (evt) => {
     if (evt.ctrlKey && evt.key === 'Enter' || evt.metaKey && evt.key === 'Enter') {
       const scrollPosition = this.element.scrollTop;
-      this._state.comments.push(this.#addNewComment());
-      this.updateElement({emojiSelected: null, typedComment: null});
       this.element.scrollTop = scrollPosition;
+      this.#addNewComment();
+      this.updateElement({emojiSelected: null, typedComment: null});
     }
   };
 
   #addNewComment = () =>
-    ({
+    this._state.comments.push({
       id: nanoid(),
       author: 'Mit Notrub',
       comment: this.element.querySelector('.film-details__comment-input').value,
       date: humanizeDate(new Date()),
-      emotion: this.element.querySelector('.film-details__emoji-item:checked').value
+      emotion: this._state.emojiSelected,
     });
 
   #descriptionInputHandler = (evt) => {
@@ -282,7 +284,17 @@ export default class FilmDetailsView extends AbstractStatefulView {
     this.element.querySelector('.film-details__comment-input').addEventListener('input', this.#descriptionInputHandler);
   };
 
-  static parseCommentToState = (comment) => this._state.comments.push(comment);
+  static parseFilmToState = (film, comments) => ({...film, comments,
+    emojiSelected: null,
+    typedComment: null,
+  });
 
-  static parseFilmToState = (film, comments) => ({...film, comments, emojiSelected: null, typedComment: null});
+  static parseStateToFilm = (state) => {
+    const film = {...state};
+
+    delete film.emojiSelected;
+    delete film.typedComment;
+
+    return film;
+  };
 }

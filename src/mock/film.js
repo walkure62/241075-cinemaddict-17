@@ -118,7 +118,7 @@ const generateAgeRating = () => {
   return ages[randomIndex];
 };
 
-const generateComments = () => Array.from({length: `${getRandomInteger(1, 7)}`}, () => getRandomInteger(1, 7));
+const generateComments = () => Array.from({length: `${getRandomInteger(1, 5)}`}, () => getRandomInteger(0, 9));
 
 export const generateFilm = () => {
   const film = {
@@ -145,6 +145,7 @@ export const generateFilm = () => {
     userDetails: {
       isWatchlist: Boolean(getRandomInteger(0, 1)),
       isHistory: Boolean(getRandomInteger(0, 1)),
+      watchingDate: '2019-04-12T16:12:32.554Z',
       isFavorite: Boolean(getRandomInteger(0, 1)),
     }
   };

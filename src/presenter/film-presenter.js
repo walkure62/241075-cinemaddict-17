@@ -20,6 +20,7 @@ export default class FilmPresenter {
   #film = null;
   #mode = Mode.DEFAULT;
   #listComments = [];
+  #currentComments = [];
 
   constructor(filmContainer, filmModel, changeData, changeMode) {
     this.#filmContainer = filmContainer;
@@ -35,8 +36,9 @@ export default class FilmPresenter {
     const prevFilmComponent = this.#filmComponent;
     const prevFilmDetaisComponent = this.#filmDetaisComponent;
 
+    this.#currentComments = this.#filterCommentsFilm(this.#listComments);
     this.#filmComponent = new FilmCardView(film);
-    this.#filmDetaisComponent = new FilmDetailsView(film, this.#listComments);
+    this.#filmDetaisComponent = new FilmDetailsView(film, this.#currentComments);
 
     this.#filmComponent.setWatchListClickHandler(this.#handleWatchListClick);
     this.#filmComponent.setHistoryClickHandler(this.#handleHistoryClick);
@@ -75,6 +77,15 @@ export default class FilmPresenter {
     remove(this.#filmDetaisComponent);
   };
 
+  #filterCommentsFilm = (comments) => {
+    const filmComments = [];
+    this.#film.comments.forEach((id) => {
+      filmComments.push(comments.find((comment) => comment.id === id));
+    });
+
+    return filmComments;
+  };
+
   #addPopup = () => {
     if (this.siteBodyElement.classList.contains('hide-overflow')) {
       return;
@@ -101,9 +112,9 @@ export default class FilmPresenter {
 
 
   #onEscKeyDown = (evt) =>{
-    evt.preventDefault();
 
     if (evt.key === 'Esc' || evt.key === 'Escape') {
+      evt.preventDefault();
       this.#removePopup();
     }
   };
