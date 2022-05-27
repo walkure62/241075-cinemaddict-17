@@ -1,7 +1,6 @@
 import {render, replace, remove} from '../framework/render.js';
 import FilmCardView from '../view/films-card-view.js';
 import FilmDetailsView from '../view/film-details-view.js';
-import CommentsView from '../view/comments-view.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -21,6 +20,7 @@ export default class FilmPresenter {
   #film = null;
   #mode = Mode.DEFAULT;
   #listComments = [];
+  #currentComments = [];
 
   constructor(filmContainer, filmModel, changeData, changeMode) {
     this.#filmContainer = filmContainer;
@@ -36,8 +36,9 @@ export default class FilmPresenter {
     const prevFilmComponent = this.#filmComponent;
     const prevFilmDetaisComponent = this.#filmDetaisComponent;
 
+    this.#currentComments = this.#filterCommentsFilm(this.#listComments);
     this.#filmComponent = new FilmCardView(film);
-    this.#filmDetaisComponent = new FilmDetailsView(film);
+    this.#filmDetaisComponent = new FilmDetailsView(film, this.#currentComments);
 
     this.#filmComponent.setWatchListClickHandler(this.#handleWatchListClick);
     this.#filmComponent.setHistoryClickHandler(this.#handleHistoryClick);
@@ -76,9 +77,13 @@ export default class FilmPresenter {
     remove(this.#filmDetaisComponent);
   };
 
-  #renderComment = (comment) => {
-    const commentComponent = new CommentsView(comment);
-    render(commentComponent, this.siteBodyElement.querySelector('.film-details__comments-list'));
+  #filterCommentsFilm = (comments) => {
+    const filmComments = [];
+    this.#film.comments.forEach((id) => {
+      filmComments.push(comments.find((comment) => comment.id === id));
+    });
+
+    return filmComments;
   };
 
   #addPopup = () => {
@@ -90,9 +95,6 @@ export default class FilmPresenter {
     this.#filmDetaisComponent.setWatchListClickHandler(this.#handleWatchListClick);
     this.#filmDetaisComponent.setHistoryClickHandler(this.#handleHistoryClick);
     this.#filmDetaisComponent.setFavoriteClickHandler(this.#handleFavoritesClick);
-    for (let i = 0; i < this.#listComments.length; i++) {
-      this.#renderComment(this.#listComments[i]);
-    }
 
     document.addEventListener('keydown', this.#onEscKeyDown);
 
@@ -110,9 +112,9 @@ export default class FilmPresenter {
 
 
   #onEscKeyDown = (evt) =>{
-    evt.preventDefault();
 
     if (evt.key === 'Esc' || evt.key === 'Escape') {
+      evt.preventDefault();
       this.#removePopup();
     }
   };

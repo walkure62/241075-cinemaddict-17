@@ -51,7 +51,8 @@ const generateTitle = () => {
   return titles[randomIndex];
 };
 
-const generateGenre = () => {
+const generateGenre = (count) => {
+  const genresList = [];
   const genres = [
     'Comedy',
     'Drama',
@@ -60,10 +61,13 @@ const generateGenre = () => {
     'Cartoon',
     'Musical',
   ];
+  for (let i = 0; i <= count; i++) {
+    const randomIndex = getRandomInteger(0, genres.length - 1);
 
-  const randomIndex = getRandomInteger(0, genres.length - 1);
+    genresList.push(genres[randomIndex]);
+  }
 
-  return genres[randomIndex];
+  return genresList;
 };
 
 const generateName = () => {
@@ -114,7 +118,7 @@ const generateAgeRating = () => {
   return ages[randomIndex];
 };
 
-const generateComments = () => Array.from({length: `${getRandomInteger(1, 7)}`}, () => getRandomInteger(1, 7));
+const generateComments = () => Array.from({length: `${getRandomInteger(1, 5)}`}, () => getRandomInteger(0, 9));
 
 export const generateFilm = () => {
   const film = {
@@ -135,12 +139,13 @@ export const generateFilm = () => {
         country: generateCountry(),
       },
       runtime: `${getRandomInteger(1, 3)}h ${getRandomInteger(10, 40)}m`,
-      genre: generateGenre(),
+      genre: generateGenre(getRandomInteger(0, 3)),
       description: generateDescription(),
     },
     userDetails: {
       isWatchlist: Boolean(getRandomInteger(0, 1)),
       isHistory: Boolean(getRandomInteger(0, 1)),
+      watchingDate: '2019-04-12T16:12:32.554Z',
       isFavorite: Boolean(getRandomInteger(0, 1)),
     }
   };
