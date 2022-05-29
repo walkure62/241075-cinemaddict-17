@@ -138,7 +138,7 @@ export const generateFilm = () => {
         date: generateReleaseDate(),
         country: generateCountry(),
       },
-      runtime: `${getRandomInteger(1, 3)}h ${getRandomInteger(10, 40)}m`,
+      runtime: `${getRandomInteger(10, 90)}`,
       genre: generateGenre(getRandomInteger(0, 3)),
       description: generateDescription(),
     },

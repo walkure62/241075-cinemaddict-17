@@ -1,4 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
+import {humanizeRuntime} from '../utils/film.js';
 
 const createFilmCardTemplate = (film) => {
   const {filmInfo, numberOfComments, id, userDetails} = film;
@@ -21,7 +22,7 @@ const createFilmCardTemplate = (film) => {
       <p class="film-card__rating">${filmInfo.totalRating}</p>
       <p class="film-card__info">
         <span class="film-card__year">${filmInfo.year}</span>
-        <span class="film-card__duration">${filmInfo.runtime}</span>
+        <span class="film-card__duration">${humanizeRuntime(filmInfo.runtime)}</span>
         <span class="film-card__genre">${filmInfo.genre[0]}</span>
       </p>
       <img src="${filmInfo.poster}" alt="" class="film-card__poster">
