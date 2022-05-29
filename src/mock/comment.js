@@ -1,5 +1,4 @@
 import {getRandomInteger, counterId} from '../utils/common.js';
-import {humanizeDate} from '../utils/film.js';
 import dayjs from 'dayjs';
 import {generateFilm} from './film.js';
 
@@ -59,7 +58,7 @@ export const generateComment = () => ({
   id: counterId(),
   author: generateAuthor(),
   comment: generateText(),
-  date: humanizeDate(generateDate()),
+  date: generateDate(),
   emotion: `${generateEmoji()}`,
   numberOfComments: generateFilm().comments.length,
 });

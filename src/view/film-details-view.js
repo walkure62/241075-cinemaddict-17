@@ -1,5 +1,5 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-import { humanizeReleaseDate, humanizeDate } from '../utils/film.js';
+import { humanizeReleaseDate, humanizeCommentDate, humanizeRuntime } from '../utils/film.js';
 import { nanoid }from 'nanoid';
 
 const BLANK_FILM = {
@@ -42,8 +42,7 @@ const createDetailedInformationTemplate = (film = BLANK_FILM, comments, emojiSel
   const createCommentTemplate = (message) => {
     const {emotion, comment, author, date} = message;
 
-    return `
-      <li class="film-details__comment">
+    return `<li class="film-details__comment">
         <span class="film-details__comment-emoji">
           <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-${emotion}">
         </span>
@@ -51,12 +50,11 @@ const createDetailedInformationTemplate = (film = BLANK_FILM, comments, emojiSel
           <p class="film-details__comment-text">${comment}</p>
           <p class="film-details__comment-info">
             <span class="film-details__comment-author">${author}</span>
-            <span class="film-details__comment-day">${date}</span>
+            <span class="film-details__comment-day">${humanizeCommentDate(date)}</span>
             <button class="film-details__comment-delete">Delete</button>
           </p>
         </div>
-        </li>
-      `;
+        </li>`;
   };
 
   const generateComments = (arr) => arr.map((elem) => createCommentTemplate(elem));
@@ -140,7 +138,7 @@ const createDetailedInformationTemplate = (film = BLANK_FILM, comments, emojiSel
           </tr>
           <tr class="film-details__row">
             <td class="film-details__term">Runtime</td>
-            <td class="film-details__cell">${filmInfo.runtime}</td>
+            <td class="film-details__cell">${humanizeRuntime(filmInfo.runtime)}</td>
           </tr>
           <tr class="film-details__row">
             <td class="film-details__term">Country</td>
@@ -166,7 +164,7 @@ const createDetailedInformationTemplate = (film = BLANK_FILM, comments, emojiSel
   <div class="film-details__bottom-container">
       <section class="film-details__comments-wrap">
         <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${numberOfComments}</span></h3>
-        <ul class="film-details__comments-list">${comments.length === 0 ? '' : generateComments(comments)}</ul>
+        <ul class="film-details__comments-list">${comments.length === 0 ? '' : generateComments(comments).join(' ')}</ul>
         ${createNewCommentTemplate()}
       </section>
     </div>
@@ -178,9 +176,7 @@ export default class FilmDetailsView extends AbstractStatefulView {
 
   constructor(film, comments) {
     super();
-    console.log(comments);
     this._state = FilmDetailsView.parseFilmToState(film, comments);
-    console.log(this._state);
     this.#setInnerHandlers();
   }
 
@@ -258,7 +254,7 @@ export default class FilmDetailsView extends AbstractStatefulView {
       id: nanoid(),
       author: 'Mit Notrub',
       comment: this.element.querySelector('.film-details__comment-input').value,
-      date: humanizeDate(new Date()),
+      date: humanizeCommentDate(new Date()),
       emotion: this._state.emojiSelected,
     });
 
