@@ -12,7 +12,7 @@ export default class FilmsModel extends Observable {
   }
 
   updateFilm = (updateType, update) => {
-    //console.log(update);
+
     const index = this.#films.findIndex((film) => film.id === update.id);
 
     if (index === -1) {

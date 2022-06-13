@@ -1,13 +1,11 @@
 import ProfileRatingView from '../view/profile-rating-view.js';
-import NavigationView from '../view/navigation-view.js';
+import FilterPresenter from '../presenter/filter-presenter.js';
 import SortingView from '../view/sorting-view.js';
 import FilmsListView from '../view/films-list-view.js';
 import ShowMoreButtonView from '../view/show-more-button-view.js';
 import NoFilmView from '../view/no-film-view.js';
 import FilmPresenter from './film-presenter.js';
-//import FilterPresenter from './filter-presenter';
-import {generateFilter} from '../mock/filter.js';
-import {render, remove, RenderPosition} from '../framework/render.js';
+import {render, remove} from '../framework/render.js';
 import {sortingByRating, sortingByDate, sortingMostCommented} from '../utils/sorting.js';
 import {SortType, FilterType, UpdateType, UserAction} from '../const.js';
 import {filter} from '../utils/filter.js';
@@ -21,33 +19,27 @@ export default class GalleryPresenter {
   #filmModel = null;
   #commentModel = null;
   #filterModel = null;
-  #sortingModel = null;
 
-  #filtersList = [];
   #listTopRatedFilms = [];
   #listMostCommentedFilms = [];
   #galleryComponent= new FilmsListView();
   #profileRatingComponent = new ProfileRatingView();
   #showMoreButtonComponent = null;
-  #filterComponent = null;
   #sortComponent = null;
   #noFilmComponent = null;
   #filmPresenter = new Map();
-  #topRatedPresenter = new Map();
-  #mostCommentedPresenter = new Map();
+  #filterPresenter = null;
   #currentSortType = SortType.DEFAULT;
   #currentFilterType = FilterType.ALL;
 
   #renderedFilmCount = FILM_COUNT_PER_STEP;
 
-  constructor(filmModel, commentModel, filterModel, sortingModel) {
+  constructor(filmModel, commentModel, filterModel) {
     this.#filmModel = filmModel;
     this.#commentModel = commentModel;
     this.#filterModel = filterModel;
-    this.#sortingModel = sortingModel;
-    this.#listTopRatedFilms = this.#filmModel.films.sort(sortingByRating).slice(0, EXTRA_CARDS_COUNT);
-    this.#listMostCommentedFilms = this.#filmModel.films.sort(sortingMostCommented).slice(0, EXTRA_CARDS_COUNT);
-    this.#filtersList = generateFilter(this.#filmModel.films);
+    this.#listTopRatedFilms = this.#filmModel.films.slice().sort(sortingByRating).slice(0, EXTRA_CARDS_COUNT);
+    this.#listMostCommentedFilms = this.#filmModel.films.slice().sort(sortingMostCommented).slice(0, EXTRA_CARDS_COUNT);
 
     this.#filmModel.addObserver(this.#handleModelEvent);
     this.#commentModel.addObserver(this.#handleModelEvent);
@@ -55,23 +47,18 @@ export default class GalleryPresenter {
   }
 
   get films() {
-    switch (this.#currentFilterType) {
-      case FilterType.WATCHLIST:
-        return filter[FilterType.WATCHLIST](this.#filmModel.films);
-      case FilterType.HISTORY:
-        return filter[FilterType.HISTORY](this.#filmModel.films);
-      case FilterType.FAVORITES:
-        return filter[FilterType.FAVORITES](this.#filmModel.films);
-    }
+    this.#currentFilterType = this.#filterModel.filter;
+    const films = this.#filmModel.films;
+    let currentFilms = films.slice();
+    currentFilms = filter[this.#currentFilterType](currentFilms);
 
-    switch (this.#currentSortType) {
+    switch(this.#currentSortType) {
       case SortType.BY_DATE:
-        return [...this.#filmModel.films].sort(sortingByDate);
+        return currentFilms.sort(sortingByDate);
       case SortType.BY_RATING:
-        return [...this.#filmModel.films].sort(sortingByRating);
+        return currentFilms.sort(sortingByRating);
     }
-
-    return this.#filmModel.films;
+    return currentFilms;
   }
 
   get comments() {
@@ -83,7 +70,7 @@ export default class GalleryPresenter {
   };
 
   #renderFilm = (container, film) => {
-    const filmPresenter = new FilmPresenter(container, this.#filmModel, this.#commentModel, this.#handleViewAction, this.#handleModeChange);
+    const filmPresenter = new FilmPresenter(container, this.#filmModel, this.#commentModel, this.#handleViewAction);
     filmPresenter.init(film);
     this.#filmPresenter.set(film.id, filmPresenter);
   };
@@ -104,46 +91,29 @@ export default class GalleryPresenter {
     render(this.#profileRatingComponent, this.siteHeaderElement);
   };
 
-  #renderNavigation = (listFilters) => {
-    this.#filterComponent = new NavigationView(listFilters);
-
-    render(this.#filterComponent, this.siteMainElement, RenderPosition.AFTERBEGIN);
-    this.#filterComponent.setFilterTypeChangeHandler(this.#handleFilterTypeChange);
+  #renderFilters= () => {
+    this.#filterPresenter = new FilterPresenter(this.siteMainElement, this.#filterModel, this.#filmModel);
+    this.#filterPresenter.init();
   };
 
-  #handleFilterTypeChange = (filterType) => {
-    if (this.#currentFilterType === filterType) {
-      return;
-    }
-    this.#currentFilterType = filterType;
-
-    this.#clearGallery({resetRenderedFilmCount: true});
-    this.#renderGallery();
-  };
-
-  #renderSort = () => {
+  #renderSort = (sortType) => {
     if(this.films.length === 0) {
       return;
     }
-    this.#sortComponent = new SortingView(this.#currentSortType);
-    this.#sortComponent.setSortTypeChangeHandler(this.#handleSortTypeChange);
+    this.#sortComponent = new SortingView(sortType);
 
     render(this.#sortComponent, this.siteMainElement);
+    this.#sortComponent.setSortTypeChangeHandler(this.#handleSortTypeChange);
   };
 
   #handleSortTypeChange = (sortType) => {
     if (this.#currentSortType === sortType) {
       return;
     }
-
     this.#currentSortType = sortType;
 
-    this.#clearGallery({resetRenderedFilmCount: true});
+    this.#clearGallery();
     this.#renderGallery();
-  };
-
-  #handleModeChange = () => {
-    this.#filmPresenter.forEach((presenter) => presenter.resetView());
   };
 
   #handleViewAction = (actionType, updateType, update, updatedComment) => {
@@ -157,7 +127,7 @@ export default class GalleryPresenter {
         break;
       case UserAction.DELETE_COMMENT:
         this.#filmModel.updateFilm(updateType, update);
-        this.#commentModel.deleteComment(updateType,update, updatedComment);
+        this.#commentModel.deleteComment(updateType, update, updatedComment);
         break;
     }
   };
@@ -165,17 +135,17 @@ export default class GalleryPresenter {
   #handleModelEvent = (updateType, data) => {
     switch (updateType) {
       case UpdateType.PATCH:
-        // - обновить часть списка (например, когда поменялось описание)
+        // - обновить часть списка
         this.#filmPresenter.get(data.id).init(data);
         break;
       case UpdateType.MINOR:
-        // - обновить список (например, когда задача ушла в архив)
+        // - обновить список фильмов
         this.#clearGallery();
         this.#renderGallery();
         break;
       case UpdateType.MAJOR:
-        // - обновить всю доску (например, при переключении фильтра)
-        this.#clearGallery({resetRenderedFilmCount: true, resetSortType: true});
+        // - обновить всю галлерею (например, при переключении фильтра)
+        this.#clearGallery({resetRenderedFilmCount: true, resetSortType: true, resetFilterType: true});
         this.#renderGallery();
         break;
     }
@@ -212,17 +182,15 @@ export default class GalleryPresenter {
     this.#filmPresenter.forEach((presenter) => presenter.destroy());
     this.#filmPresenter.clear();
 
-    remove(this.#filterComponent);
+    this.#filterPresenter.destroy();
     remove(this.#sortComponent);
     remove(this.#noFilmComponent);
     remove(this.#showMoreButtonComponent);
+    remove(this.#galleryComponent);
 
     if (resetRenderedFilmCount) {
       this.#renderedFilmCount = FILM_COUNT_PER_STEP;
     } else {
-      // На случай, если перерисовка доски вызвана
-      // уменьшением количества задач (например, удаление или перенос в архив)
-      // нужно скорректировать число показанных задач
       this.#renderedFilmCount = Math.min(filmCount, this.#renderedFilmCount);
     }
 
@@ -238,6 +206,8 @@ export default class GalleryPresenter {
   #renderGallery = () => {
     const films = this.films;
     const filmsCount = films.length;
+    this.#listTopRatedFilms = films.slice().sort(sortingByRating).slice(0, EXTRA_CARDS_COUNT);
+    this.#listMostCommentedFilms = films.slice().sort(sortingMostCommented).slice(0, EXTRA_CARDS_COUNT);
 
     if(filmsCount === 0) {
       this.#renderNoFilms();
@@ -245,15 +215,15 @@ export default class GalleryPresenter {
     }
 
     this.#renderProfile();
-    this.#renderNavigation(this.#filtersList);
-    this.#renderSort();
+    this.#renderFilters();
+    this.#renderSort(this.#currentSortType);
     render(this.#galleryComponent, this.siteMainElement);
     this.#renderMostCommentedFilms(this.#listMostCommentedFilms);
     this.#renderMostRatingFilms(this.#listTopRatedFilms);
 
-    // Теперь, когда #renderBoard рендерит доску не только на старте,
+    // Теперь, когда #renderGallery рендерит доску не только на старте,
     // но и по ходу работы приложения, нужно заменить
-    // константу TASK_COUNT_PER_STEP на свойство #renderedTaskCount,
+    // константу FILM_COUNT_PER_STEP на свойство #renderedFilmCount,
     // чтобы в случае перерисовки сохранить N-показанных карточек
     this.#renderFilms(films.slice(0, Math.min(filmsCount, this.#renderedFilmCount)));
 

@@ -2,12 +2,12 @@ import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import { humanizeCommentDate} from '../utils/film';
 import { UpdateType, UserAction } from '../const';
 import { nanoid } from 'nanoid';
-//import he from 'he';
+import he from 'he';
 
 const createCommentTemplate = (commentData) => {
-  const {emotion, comment, author, date} = commentData;
+  const {emotion, comment, author, date, id} = commentData;
 
-  return `<li class="film-details__comment">
+  return `<li class="film-details__comment" data-id="${id}">
       <span class="film-details__comment-emoji">
         <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-${emotion}">
       </span>
@@ -26,15 +26,7 @@ const generateComments = (arr) => arr.map((elem) => createCommentTemplate(elem))
 const showTypedComment = (comment) => comment ? `<textarea class='film-details__comment-input' name='comment'>${comment}</textarea>` : '<textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment"></textarea>';
 const showSelectedEmoji = (emoji) => emoji ? `<img src="./images/emoji/${emoji}.png" width="55" height="55" alt="emoji">` : '';
 
-const createNewCommentTemplate = (state) => {
-  const isSmile = state.emojiSelected === 'smile' ? 'checked' : '';
-
-  const isSleeping = state.emojiSelected === 'sleeping' ? 'checked' : '';
-
-  const isPuke = state.emojiSelected === 'puke' ? 'checked' : '';
-
-  const isAngry = state.emojiSelected === 'angry' ? 'checked' : '';
-  return `
+const createNewCommentTemplate = (state) => `
   <div class="film-details__new-comment">
     <div class="film-details__add-emoji-label">
     ${showSelectedEmoji(state.emojiSelected)}
@@ -44,35 +36,34 @@ const createNewCommentTemplate = (state) => {
     </label>
 
   <div class="film-details__emoji-list">
-    <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-smile" value="smile" ${isSmile()}>
+    <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-smile" value="smile" ${state.emojiSelected === 'smile' ? 'checked' : ''}>
     <label class="film-details__emoji-label" for="emoji-smile">
       <img src="./images/emoji/smile.png" width="30" height="30" alt="smile">
     </label>
 
-    <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-sleeping" value="sleeping" ${isSleeping()}>
+    <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-sleeping" value="sleeping" ${state.emojiSelected === 'sleeping' ? 'checked' : ''}>
     <label class="film-details__emoji-label" for="emoji-sleeping">
       <img src="./images/emoji/sleeping.png" width="30" height="30" alt="sleeping">
     </label>
 
-    <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-puke" value="puke" ${isPuke()}>
+    <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-puke" value="puke" ${state.emojiSelected === 'puke' ? 'checked' : ''}>
       <label class="film-details__emoji-label" for="emoji-puke">
         <img src="./images/emoji/puke.png" width="30" height="30" alt="puke">
       </label>
 
-    <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-angry" value="angry" ${isAngry()}>
+    <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-angry" value="angry" ${state.emojiSelected === 'angry' ? 'checked' : ''}>
       <label class="film-details__emoji-label" for="emoji-angry">
         <img src="./images/emoji/angry.png" width="30" height="30" alt="angry">
       </label>
   </div>
   </div>`;
-};
 
 const createCommentsTemplate = (commentsData, state) => (`
      <div class="film-details__bottom-container">
        <section class="film-details__comments-wrap">
          <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${commentsData.length}</span></h3>
          <ul class="film-details__comments-list">
-           ${generateComments(commentsData)}
+           ${generateComments(commentsData).join('')}
          </ul>
          ${createNewCommentTemplate(state)}
          </div>
@@ -90,7 +81,8 @@ export default class CommentView extends AbstractStatefulView {
     this.#film = film;
     this.#comments = comments;
     this.#changeData = changeData;
-    this._state = CommentView.parseFilmToState(this.#film, this.#comments);
+    this._state = CommentView.parseCommentToState(this.#film, this.#comments);
+    this.element.querySelectorAll('.film-details__comment').forEach((comment) => comment.addEventListener('click', this.#handleDeleteCommentClick));
     this.#setInnerHandlers();
   }
 
@@ -110,65 +102,76 @@ export default class CommentView extends AbstractStatefulView {
     }
   };
 
+  #descriptionInputHandler = (evt) => {
+    evt.preventDefault();
+    this._setState({
+      typedComment: he.encode(evt.currentTarget.value),
+    });
+    this.updateElement({typedComment: he.encode(evt.currentTarget.value)});
+  };
+
   #submitFormHandler = (evt) => {
     if (evt.ctrlKey && evt.key === 'Enter' || evt.metaKey && evt.key === 'Enter') {
       const scrollPosition = this.element.scrollTop;
       this.element.scrollTop = scrollPosition;
-      this.#addNewComment();
+      const comment = this.#addNewComment();
+      this._state.comments.push(comment);
       this.updateElement({emojiSelected: null, typedComment: null});
+      this.element.scrollTop = scrollPosition;
+      const commentsId = [];
+      this._state.comments.forEach((el) => commentsId.push(el.id));
+      this.#changeData(
+        UserAction.ADD_COMMENT,
+        UpdateType.PATCH,
+        {...this._state, comments: commentsId},
+        comment
+      );
     }
   };
 
   #addNewComment = () =>
-    this._state.comments.push({
+    ({
       id: nanoid(),
       author: 'Mit Notrub',
-      comment: this.element.querySelector('.film-details__comment-input').value,
+      comment: he.encode(this.element.querySelector('.film-details__comment-input').value),
       date: humanizeCommentDate(new Date()),
       emotion: this._state.emojiSelected,
     });
 
-  #descriptionInputHandler = (evt) => {
+  #handleDeleteCommentClick = (evt) => {
     evt.preventDefault();
-    this._setState({
-      typedComment: evt.currentTarget.value,
-    });
-  };
-
-  #handleDeleteClick = (film) => {
-    this.#changeData(
-      UserAction.DELETE_COMMENT,
-      UpdateType.MINOR,
-      film,
-    );
+    //console.log(evt.currentTarget.dataset.id);
+    //console.log(evt.currentTarget);
+    if (evt.target.nodeName === 'BUTTON') {
+      const commentId = evt.currentTarget.dataset.id;
+      const selectedComment = this.#comments.filter((comment) =>  commentId === comment.id);
+      const updatedFilmComments = this._state.comments.filter((comment) => commentId !== comment.id);
+      this._state.comments = updatedFilmComments;
+      const commentsId = [];
+      this._state.comments.forEach((el) => commentsId.push(el.id));
+      this.#changeData(
+        UserAction.DELETE_COMMENT,
+        UpdateType.PATCH,
+        {...this._state, comments: commentsId},
+        selectedComment[0]
+      );
+    }
   };
 
 
   _restoreHandlers = () => {
     this.#setInnerHandlers();
-    this.setCloseClickHandler(this._callback.closeClick);
-    this.setFavoriteClickHandler(this._callback.favoriteClick);
-    this.setWatchListClickHandler(this._callback.watchListClick);
-    this.setHistoryClickHandler(this._callback.historyClick);
   };
 
   #setInnerHandlers = () => {
     document.addEventListener('keypress', this.#submitFormHandler);
     this.element.querySelector('.film-details__emoji-list').addEventListener('click', this.#changeReactionHandler);
     this.element.querySelector('.film-details__comment-input').addEventListener('input', this.#descriptionInputHandler);
+    //document.querySelectorAll('.film-details__comment').forEach((comment) => comment.addEventListener('click', this.#handleDeleteCommentClick));
   };
 
   static parseCommentToState = (film, comments) => ({...film, comments,
     emojiSelected: null,
     typedComment: null,
   });
-
-  static parseStateToComment = (state) => {
-    const film = {...state};
-
-    delete film.emojiSelected;
-    delete film.typedComment;
-
-    return film;
-  };
 }

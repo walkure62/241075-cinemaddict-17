@@ -5,10 +5,25 @@ const QUANTITY_COMMENTS = 10;
 
 export default class CommentModel extends Observable {
   #comments = Array.from({length: QUANTITY_COMMENTS}, generateComment);
+  #filmsApiService = null;
+
+  constructor(filmsApiService) {
+    super();
+    this.#filmsApiService = filmsApiService;
+  }
 
   get comments () {
     return this.#comments;
   }
+
+  init = async (film) => {
+    try {
+      const comments = await this.#filmsApiService.getComments(film);
+      this.#comments = comments;
+    } catch (err) {
+      this.#comments = [];
+    }
+  };
 
   addComment = (updateType, update, updatedComment) => {
     this.#comments = [

@@ -1,30 +1,37 @@
-import { remove, render, RenderPosition, replace } from '../framework/render';
-import CommentView from '../view/comment-view';
+import { remove, render, replace } from '../framework/render.js';
+import CommentView from '../view/comment-view.js';
 
 export default class CommentPresenter {
-  #commentsContainer = null;
+  #popupContainer = null;
+  #commentContainer = null;
   #commentComponent = null;
-  #commentModel = null;
   #changeData = null;
-  #comments = null;
+  #comments = [];
+  #film = null;
+  #commentsModel = null;
 
-  constructor(commentsContainer, commentModel, changeData) {
-    this.#commentModel = commentModel;
-    this.#commentsContainer = commentsContainer;
+  constructor(popupContainer, film, commentsModel, comments, changeData) {
+    this.#comments = comments;
+    this.#film = film;
+    this.#commentsModel = commentsModel;
+    this.#popupContainer = popupContainer;
+    this.#commentContainer = this.#popupContainer.querySelector('.film-details__inner');
     this.#changeData = changeData;
+
+    this.#commentsModel.addObserver(this.#handleCommentModelChange);
   }
 
   init(film) {
-    const prevCommentComponent = this.#commentComponent;
-    this.#comments = this.#filterCommentsFilm(this.commentModel.comments);
     this.#commentComponent = new CommentView(film, this.#comments, this.#changeData);
-    // this.#commentComponent.setDeleteClickHandler(this.#handleDeleteClick);
+    //console.log(this.#commentComponent);
+    //console.log(this.#commentContainer);
+    const prevCommentComponent = this.#commentComponent;
 
     if (!prevCommentComponent) {
-      render(this.#commentComponent, this.#commentsContainer, RenderPosition.AFTEREND);
+      render(this.#commentComponent, this.#commentContainer);
       return;
     }
-    if (this.#commentsContainer.contains(prevCommentComponent.element)) {
+    if (this.#popupContainer.contains(prevCommentComponent.element)) {
       replace(this.#commentComponent, prevCommentComponent);
     }
     remove(prevCommentComponent);
@@ -34,31 +41,16 @@ export default class CommentPresenter {
     remove(this.#commentComponent);
   };
 
-  #filterCommentsFilm = (comments) => {
-    const filmComments = [];
-    comments.forEach((id) => {
-      filmComments.push(comments.find((comment) => comment.id === id));
-    });
-
-    return filmComments;
-  };
-
-  /* #handleFormSubmit = (update) => {
+  /* #handleAddComment = (update) => {
     this.#changeData(
-      UserAction.UPDATE_TASK,
+      UserAction.UPDATE_FILM,
       UpdateType.PATCH,
       update,
     );
-    this.#replaceFormToCard();
   };
+  */
 
-  #handleDeleteClick = (task) => {
-    this.#changeData(
-      UserAction.DELETE_TASK,
-      UpdateType.MINOR,
-      task,
-    );
-    this.#replaceFormToCard();
+  #handleCommentModelChange = (updateType, updatedFilm) => {
+    this.init(updatedFilm);
   };
-} */
 }
