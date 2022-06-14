@@ -107,7 +107,6 @@ export default class CommentView extends AbstractStatefulView {
     this._setState({
       typedComment: he.encode(evt.currentTarget.value),
     });
-    this.updateElement({typedComment: he.encode(evt.currentTarget.value)});
   };
 
   #submitFormHandler = (evt) => {
@@ -140,15 +139,14 @@ export default class CommentView extends AbstractStatefulView {
 
   #handleDeleteCommentClick = (evt) => {
     evt.preventDefault();
-    //console.log(evt.currentTarget.dataset.id);
-    //console.log(evt.currentTarget);
     if (evt.target.nodeName === 'BUTTON') {
       const commentId = evt.currentTarget.dataset.id;
-      const selectedComment = this.#comments.filter((comment) =>  commentId === comment.id);
-      const updatedFilmComments = this._state.comments.filter((comment) => commentId !== comment.id);
+      const selectedComment = this.#comments.filter((comment) =>  commentId === comment.id.toString());
+      const updatedFilmComments = this._state.comments.filter((comment) => commentId !== comment.id.toString());
       this._state.comments = updatedFilmComments;
       const commentsId = [];
       this._state.comments.forEach((el) => commentsId.push(el.id));
+
       this.#changeData(
         UserAction.DELETE_COMMENT,
         UpdateType.PATCH,

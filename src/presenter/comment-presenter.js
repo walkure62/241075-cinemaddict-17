@@ -23,11 +23,9 @@ export default class CommentPresenter {
 
   init(film) {
     this.#commentComponent = new CommentView(film, this.#comments, this.#changeData);
-    //console.log(this.#commentComponent);
-    //console.log(this.#commentContainer);
     const prevCommentComponent = this.#commentComponent;
 
-    if (!prevCommentComponent) {
+    if (prevCommentComponent) {
       render(this.#commentComponent, this.#commentContainer);
       return;
     }

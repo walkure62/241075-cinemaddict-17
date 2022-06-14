@@ -30,15 +30,12 @@ export default class FilmPresenter {
     this.#commentModel = commentModel;
     this.#listComments = [...this.#commentModel.comments];
     this.#changeData = changeData;
-
-    //this.#filmModel.addObserver(this.#handlePopupModelEvent);
   }
 
   init = (film) => {
     this.#film = film;
 
     const prevFilmComponent = this.#filmComponent;
-    //const prevFilmDetailsComponent = this.#filmDetailsComponent;
 
     this.#currentComments = this.#filterCommentsFilm(this.#listComments);
     this.#filmComponent = new FilmCardView(film);
@@ -64,7 +61,7 @@ export default class FilmPresenter {
     remove(this.#filmComponent);
   };
 
-  #updatePopUp = (film) => {
+  updatePopUp = (film) => {
     this.#filmDetailsPresenter.init(film);
   };
 
