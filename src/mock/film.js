@@ -127,7 +127,6 @@ export const generateFilm = () => {
     filmInfo: {
       title: generateTitle(),
       alternativeTitle: generateTitle(),
-      year: getRandomInteger(1995, 2000),
       totalRating: (getRandomInteger(200, 900) / 100).toFixed(1),
       poster: `./images/posters/${generateImage()}`,
       ageRating: generateAgeRating(),
@@ -149,8 +148,6 @@ export const generateFilm = () => {
       isFavorite: Boolean(getRandomInteger(0, 1)),
     }
   };
-
-  film.numberOfComments = film.comments.length;
 
   return film;
 };

@@ -4,8 +4,9 @@ import SortingView from '../view/sorting-view.js';
 import FilmsListView from '../view/films-list-view.js';
 import ShowMoreButtonView from '../view/show-more-button-view.js';
 import NoFilmView from '../view/no-film-view.js';
+import LoadingView from '../view/loading-view.js';
 import FilmPresenter from './film-presenter.js';
-import {render, remove} from '../framework/render.js';
+import {render, remove, RenderPosition} from '../framework/render.js';
 import {sortingByRating, sortingByDate, sortingMostCommented} from '../utils/sorting.js';
 import {SortType, FilterType, UpdateType, UserAction} from '../const.js';
 import {filter} from '../utils/filter.js';
@@ -24,6 +25,7 @@ export default class GalleryPresenter {
   #listMostCommentedFilms = [];
   #galleryComponent= new FilmsListView();
   #profileRatingComponent = new ProfileRatingView();
+  #loadingComponent = new LoadingView();
   #showMoreButtonComponent = null;
   #sortComponent = null;
   #noFilmComponent = null;
@@ -31,6 +33,7 @@ export default class GalleryPresenter {
   #filterPresenter = null;
   #currentSortType = SortType.DEFAULT;
   #currentFilterType = FilterType.ALL;
+  #isLoading = true;
 
   #renderedFilmCount = FILM_COUNT_PER_STEP;
 
@@ -102,7 +105,7 @@ export default class GalleryPresenter {
     }
     this.#sortComponent = new SortingView(sortType);
 
-    render(this.#sortComponent, this.siteMainElement);
+    render(this.#sortComponent, this.siteMainElement, RenderPosition.AFTERBEGIN);
     this.#sortComponent.setSortTypeChangeHandler(this.#handleSortTypeChange);
   };
 
@@ -148,12 +151,21 @@ export default class GalleryPresenter {
         this.#clearGallery({resetRenderedFilmCount: true, resetSortType: true, resetFilterType: true});
         this.#renderGallery();
         break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderGallery();
+        break;
     }
   };
 
   #renderNoFilms = () => {
     this.#noFilmComponent = new NoFilmView(this.#currentFilterType);
     render(this.#noFilmComponent, this.siteMainElement.querySelector('.films-list__container'));
+  };
+
+  #renderLoading = () => {
+    render(this.#loadingComponent, this.#galleryComponent.element, RenderPosition.AFTERBEGIN);
   };
 
   #renderShowMoreButton = () => {
@@ -185,6 +197,7 @@ export default class GalleryPresenter {
     this.#filterPresenter.destroy();
     remove(this.#sortComponent);
     remove(this.#noFilmComponent);
+    remove(this.#loadingComponent);
     remove(this.#showMoreButtonComponent);
     remove(this.#galleryComponent);
 
@@ -209,15 +222,21 @@ export default class GalleryPresenter {
     this.#listTopRatedFilms = films.slice().sort(sortingByRating).slice(0, EXTRA_CARDS_COUNT);
     this.#listMostCommentedFilms = films.slice().sort(sortingMostCommented).slice(0, EXTRA_CARDS_COUNT);
 
+    render(this.#galleryComponent, this.siteMainElement);
+
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
     if(filmsCount === 0) {
       this.#renderNoFilms();
       return;
     }
 
     this.#renderProfile();
-    this.#renderFilters();
     this.#renderSort(this.#currentSortType);
-    render(this.#galleryComponent, this.siteMainElement);
+    this.#renderFilters();
     this.#renderMostCommentedFilms(this.#listMostCommentedFilms);
     this.#renderMostRatingFilms(this.#listTopRatedFilms);
 
