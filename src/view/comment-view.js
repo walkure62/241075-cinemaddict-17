@@ -1,7 +1,6 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import { humanizeCommentDate} from '../utils/film';
 import { UpdateType, UserAction } from '../const';
-import { nanoid } from 'nanoid';
 import he from 'he';
 
 const createCommentTemplate = (commentData) => {
@@ -91,12 +90,12 @@ export default class CommentView extends AbstractStatefulView {
   }
 
   #changeReactionHandler = (evt) => {
-
-    if (evt.target.nodeName === 'IMG') {
-      const emotionName = evt.target.alt;
+    const commentText = this.element.querySelector('.film-details__comment-input').value;
+    if (evt.target.nodeName === 'INPUT') {
+      const emotionName = evt.target.value;
       if(this._state.emojiSelected !== emotionName){
         const scrollPosition = this.element.scrollTop;
-        this.updateElement({emojiSelected: emotionName});
+        this.updateElement({emojiSelected: emotionName, typedComment: he.encode(commentText)});
         this.element.scrollTop = scrollPosition;
       }
     }
@@ -111,47 +110,52 @@ export default class CommentView extends AbstractStatefulView {
 
   #submitFormHandler = (evt) => {
     if (evt.ctrlKey && evt.key === 'Enter' || evt.metaKey && evt.key === 'Enter') {
+      const newCommentContainer = evt.currentTarget;
+      const newCommentTextArea = newCommentContainer.querySelector('textarea');
+      newCommentTextArea.disabled = true;
       const scrollPosition = this.element.scrollTop;
+      const newComment = this.#addNewComment();
+      const filteredFilmCommentIds = this._state.comments.map((comment) => comment.id);
+      const updatedFilm = {...this._state, comments: filteredFilmCommentIds};
+      delete updatedFilm.emojiSelected;
+      delete updatedFilm.typedComment;
       this.element.scrollTop = scrollPosition;
-      const comment = this.#addNewComment();
-      this._state.comments.push(comment);
-      this.updateElement({emojiSelected: null, typedComment: null});
-      this.element.scrollTop = scrollPosition;
-      const commentsId = [];
-      this._state.comments.forEach((el) => commentsId.push(el.id));
+
       this.#changeData(
         UserAction.ADD_COMMENT,
         UpdateType.PATCH,
-        {...this._state, comments: commentsId},
-        comment
+        updatedFilm,
+        [newComment, newCommentContainer]
       );
     }
   };
 
+
   #addNewComment = () =>
     ({
-      id: nanoid(),
-      author: 'Mit Notrub',
       comment: he.encode(this.element.querySelector('.film-details__comment-input').value),
-      date: humanizeCommentDate(new Date()),
-      emotion: this._state.emojiSelected,
+      emotion: this.element.querySelector('.film-details__emoji-item:checked').value,
     });
 
   #handleDeleteCommentClick = (evt) => {
-    evt.preventDefault();
+    const commentContainer = evt.currentTarget;
     if (evt.target.nodeName === 'BUTTON') {
-      const commentId = evt.currentTarget.dataset.id;
-      const selectedComment = this.#comments.filter((comment) =>  commentId === comment.id.toString());
-      const updatedFilmComments = this._state.comments.filter((comment) => commentId !== comment.id.toString());
-      this._state.comments = updatedFilmComments;
-      const commentsId = [];
-      this._state.comments.forEach((el) => commentsId.push(el.id));
+      evt.preventDefault();
+      const commentId = commentContainer.dataset.id;
+      const filteredFilmCommentIds = this._state.comments.filter((comment) => comment.id !== commentId).map((comment) => comment.id);
+      const updatedFilm = {...this._state, comments: filteredFilmCommentIds};
+      const deletedComment = this._state.comments.find((comment) => comment.id.toString() === commentId);
+      evt.target.disabled = true;
+      evt.target.textContent = 'Deleting...';
+
+      delete updatedFilm.emojiSelected;
+      delete updatedFilm.typedComment;
 
       this.#changeData(
         UserAction.DELETE_COMMENT,
         UpdateType.PATCH,
-        {...this._state, comments: commentsId},
-        selectedComment[0]
+        updatedFilm,
+        [deletedComment, commentContainer]
       );
     }
   };
@@ -165,11 +169,13 @@ export default class CommentView extends AbstractStatefulView {
     document.addEventListener('keypress', this.#submitFormHandler);
     this.element.querySelector('.film-details__emoji-list').addEventListener('click', this.#changeReactionHandler);
     this.element.querySelector('.film-details__comment-input').addEventListener('input', this.#descriptionInputHandler);
-    //document.querySelectorAll('.film-details__comment').forEach((comment) => comment.addEventListener('click', this.#handleDeleteCommentClick));
   };
 
   static parseCommentToState = (film, comments) => ({...film, comments,
     emojiSelected: null,
     typedComment: null,
+    isDisabled: false,
+    isSaving: false,
+    isDeleting: false,
   });
 }

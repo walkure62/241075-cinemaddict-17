@@ -8,8 +8,9 @@ import LoadingView from '../view/loading-view.js';
 import FilmPresenter from './film-presenter.js';
 import {render, remove, RenderPosition} from '../framework/render.js';
 import {sortingByRating, sortingByDate, sortingMostCommented} from '../utils/sorting.js';
-import {SortType, FilterType, UpdateType, UserAction} from '../const.js';
+import {SortType, FilterType, UpdateType, UserAction, TimeLimit} from '../const.js';
 import {filter} from '../utils/filter.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 
 const FILM_COUNT_PER_STEP = 5;
 const EXTRA_CARDS_COUNT = 2;
@@ -34,6 +35,7 @@ export default class GalleryPresenter {
   #currentSortType = SortType.DEFAULT;
   #currentFilterType = FilterType.ALL;
   #isLoading = true;
+  #uiBlocker = new UiBlocker(TimeLimit.LOWER_LIMIT, TimeLimit.UPPER_LIMIT);
 
   #renderedFilmCount = FILM_COUNT_PER_STEP;
 
@@ -119,20 +121,50 @@ export default class GalleryPresenter {
     this.#renderGallery();
   };
 
-  #handleViewAction = (actionType, updateType, update, updatedComment) => {
+  #handleViewAction = async (actionType, updateType, updatedFilm, updatedComment) => {
     switch (actionType) {
       case UserAction.UPDATE_FILM:
-        this.#filmModel.updateFilm(updateType, update);
+        this.#uiBlocker.block();
+        try {
+          await this.#filmModel.updateFilm(updateType, updatedFilm);
+        } catch (err) {
+          this.#uiBlocker.unblock();
+          this.#filmPresenter.get(updatedFilm.id).setAborting();
+        }
+        this.#uiBlocker.unblock();
         break;
       case UserAction.ADD_COMMENT:
-        this.#filmModel.updateFilm(updateType, update);
-        this.#commentModel.addComment(updateType, update, updatedComment);
+        this.#uiBlocker.block();
+        try {
+          await this.#commentModel.addComment(updateType, updatedFilm, updatedComment[0]);
+        } catch (err) {
+          this.#uiBlocker.unblock();
+          this.#handleNewCommentError(updatedComment[1]);
+        }
+        this.#uiBlocker.unblock();
         break;
       case UserAction.DELETE_COMMENT:
-        this.#filmModel.updateFilm(updateType, update);
-        this.#commentModel.deleteComment(updateType, update, updatedComment);
+        try {
+          await this.#commentModel.deleteComment(updateType, updatedFilm, updatedComment[0]);
+        } catch (err) {
+          this.#handleCommentError(updatedComment[1]);
+        }
         break;
     }
+  };
+
+  #handleCommentError = (commentContainer) => {
+    const deleteCommentButton = commentContainer.querySelector('button');
+    commentContainer.classList.add('shake');
+    deleteCommentButton.textContent = 'Delete';
+    deleteCommentButton.disabled = false;
+    setTimeout(() => commentContainer.classList.remove('shake'), 500);
+  };
+
+  #handleNewCommentError = (commentContainer) => {
+    commentContainer.classList.add('shake');
+    commentContainer.querySelector('textarea').disabled = false;
+    setTimeout(() => commentContainer.classList.remove('shake'), 500);
   };
 
   #handleModelEvent = (updateType, data) => {

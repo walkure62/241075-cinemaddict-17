@@ -8,7 +8,7 @@ const AUTHORIZATION = 'Basic hG8fJl5f90hghRT7';
 const END_POINT = 'https://17.ecmascript.pages.academy/cinemaddict/';
 
 const filmModel = new FilmsModel(new FilmsApiService(END_POINT, AUTHORIZATION));
-const commentModel = new CommentModel();
+const commentModel = new CommentModel(new FilmsApiService(END_POINT, AUTHORIZATION));
 const filterModel = new FilterModel();
 const renderGallery = new GalleryPresenter(filmModel, commentModel, filterModel);
 

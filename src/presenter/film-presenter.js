@@ -23,6 +23,7 @@ export default class FilmPresenter {
   #mode = Mode.DEFAULT;
   #listComments = [];
   #currentComments = [];
+  #isDisabled = null;
 
   constructor(filmContainer, filmModel, commentModel, changeData) {
     this.#filmContainer = filmContainer;
@@ -33,12 +34,13 @@ export default class FilmPresenter {
   }
 
   init = (film) => {
+    this.#isDisabled = false;
     this.#film = film;
 
     const prevFilmComponent = this.#filmComponent;
 
     this.#currentComments = this.#filterCommentsFilm(this.#listComments);
-    this.#filmComponent = new FilmCardView(film);
+    this.#filmComponent = new FilmCardView(film, this.#isDisabled);
     this.#filmDetailsPresenter = new FilmDetailsPresenter(this.siteFooterElement, this.#film, this.#currentComments, this.#changeData);
 
     this.#filmComponent.setWatchListClickHandler(this.#handleWatchListClick);
@@ -65,6 +67,18 @@ export default class FilmPresenter {
     this.#filmDetailsPresenter.init(film);
   };
 
+  setDisabled = () => this.#filmComponent.updateElement({isDisabled: true,});
+
+  setAborting = () => {
+    const resetButtons = () => {
+      this.#filmComponent.updateElement({isDisabled: false,});
+    };
+    if (document.querySelector('.film-details')) {
+      return this.#filmDetailsPresenter.setAborting();
+    }
+    this.#filmComponent.shake(resetButtons);
+  };
+
 
   #filterCommentsFilm = (comments) => {
     const filmComments = [];
@@ -80,13 +94,6 @@ export default class FilmPresenter {
     document.body.classList.toggle('hide-overflow');
     this.#filmDetailsPresenter.init(film);
   };
-
-  /*#removePopup = () => {
-    this.siteBodyElement.classList.remove('hide-overflow');
-    remove(this.#filmDetailsComponent);
-
-    this.#mode = Mode.DEFAULT;
-  };*/
 
   #hadleCardClick = (film) => {
     if(document.querySelector('.film-details')) {
@@ -113,8 +120,4 @@ export default class FilmPresenter {
       updatedFilm,
     );
   };
-
-  /*#handlePopupClose = () => {
-    this.#removePopup();
-  };*/
 }

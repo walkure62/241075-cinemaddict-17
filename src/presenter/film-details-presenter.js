@@ -25,7 +25,7 @@ export default class FilmDetailsPresenter {
   init = (film) => {
     const prevPopupComponent = this.#popupComponent;
     this.#popupComponent = new FilmDetailsView(film, this.#changeData);
-    this.#commentsPresenter = new CommentPresenter(this.#popupComponent.element, film, this.#commentsModel, this.#comments, this.#changeData);
+    this.#commentsPresenter = new CommentPresenter(this.#popupComponent.element, film, this.#commentsModel, this.#changeData);
     this.#commentsPresenter.init(film);
     this.#popupComponent.setCloseClickHandler(this.#onCloseButtonClick);
     this.#popupComponent.setFavoriteClickHandler(this.#onFavoriteClick);
