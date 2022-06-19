@@ -6,26 +6,25 @@ export default class CommentPresenter {
   #commentContainer = null;
   #commentComponent = null;
   #changeData = null;
-  #comments = [];
   #film = null;
   #commentsModel = null;
 
-  constructor(popupContainer, film, commentsModel, comments, changeData) {
-    this.#comments = comments;
+  constructor(popupContainer, film, commentsModel, changeData) {
     this.#film = film;
     this.#commentsModel = commentsModel;
     this.#popupContainer = popupContainer;
     this.#commentContainer = this.#popupContainer.querySelector('.film-details__inner');
     this.#changeData = changeData;
 
-    this.#commentsModel.addObserver(this.#handleCommentModelChange);
+    this.#commentsModel.addObserver(this.#handleCommentModelEvent);
   }
 
-  init(film) {
-    this.#commentComponent = new CommentView(film, this.#comments, this.#changeData);
+  init = async (film, updateType) => {
+    const comments = updateType ? this.#commentsModel.comments : await this.#commentsModel.init(film).then(() => this.#commentsModel.comments);
     const prevCommentComponent = this.#commentComponent;
+    this.#commentComponent = new CommentView(film, comments, this.#handleCommentModelChange);
 
-    if (prevCommentComponent) {
+    if (!prevCommentComponent) {
       render(this.#commentComponent, this.#commentContainer);
       return;
     }
@@ -33,22 +32,11 @@ export default class CommentPresenter {
       replace(this.#commentComponent, prevCommentComponent);
     }
     remove(prevCommentComponent);
-  }
-
-  destroy = () => {
-    remove(this.#commentComponent);
   };
 
-  /* #handleAddComment = (update) => {
-    this.#changeData(
-      UserAction.UPDATE_FILM,
-      UpdateType.PATCH,
-      update,
-    );
-  };
-  */
+  destroy = () => remove(this.#commentComponent);
 
-  #handleCommentModelChange = (updateType, updatedFilm) => {
-    this.init(updatedFilm);
-  };
+  #handleCommentModelChange = (actionType, updateType, updatedFilm, UpdatedComment) => this.#changeData(actionType, updateType, updatedFilm, UpdatedComment);
+
+  #handleCommentModelEvent = (updateType, updatedFilm) => this.init(updatedFilm, updateType);
 }
