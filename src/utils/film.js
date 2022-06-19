@@ -1,6 +1,9 @@
 import dayjs from 'dayjs';
+import RelativeTime from 'dayjs/plugin/relativeTime';
 
-const humanizeCommentDate = (date) => dayjs(date).format('YYYY/MM/DD HH:mm');
+dayjs.extend(RelativeTime);
+
+const humanizeCommentDate = (date) => dayjs(date).fromNow();
 
 const humanizeReleaseDate = (date) => dayjs(date).format('DD MMMM YYYY');
 const getYearFromReleaseDate = (date) => dayjs(date).format('YYYY');
@@ -14,9 +17,5 @@ const humanizeRuntime = (time) => {
   return `${time}m`;
 };
 
-const isFilmInWatchlist = (watchlist) => Object.values(watchlist).some(Boolean);
-const isFilmFavorite = (favorite) => Object.values(favorite).some(Boolean);
-const isFilmInHistory = (history) => Object.values(history).some(Boolean);
 
-
-export {humanizeCommentDate, humanizeReleaseDate, getYearFromReleaseDate, humanizeRuntime, isFilmInWatchlist, isFilmFavorite, isFilmInHistory};
+export {humanizeCommentDate, humanizeReleaseDate, getYearFromReleaseDate, humanizeRuntime};

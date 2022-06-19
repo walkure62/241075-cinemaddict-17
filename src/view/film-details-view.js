@@ -23,7 +23,7 @@ const createDetailedInformationTemplate = (film) => {
       <div class="film-details__poster">
         <img class="film-details__poster-img" src="${filmInfo.poster}" alt="">
 
-        <p class="film-details__age">${filmInfo.ageRating}</p>
+        <p class="film-details__age">${filmInfo.ageRating}+</p>
       </div>
 
       <div class="film-details__info">
@@ -64,7 +64,7 @@ const createDetailedInformationTemplate = (film) => {
             <td class="film-details__cell">${filmInfo.release.country}</td>
           </tr>
           <tr class="film-details__row">
-            <td class="film-details__term">Genres</td>
+            <td class="film-details__term">${filmInfo.genre.length > 1 ? 'genres' : 'genre'}</td>
             <td class="film-details__cell">
               ${showGenres(filmInfo.genre)}
           </tr>
