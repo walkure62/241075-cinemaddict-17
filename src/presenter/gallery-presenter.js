@@ -1,15 +1,16 @@
-import ProfileRatingView from '../view/profile-rating-view.js';
+import ProfileRatingPresenter from '../presenter/profile-rating-presenter.js';
 import FilterPresenter from '../presenter/filter-presenter.js';
 import SortingView from '../view/sorting-view.js';
 import FilmsListView from '../view/films-list-view.js';
 import ShowMoreButtonView from '../view/show-more-button-view.js';
 import NoFilmView from '../view/no-film-view.js';
 import LoadingView from '../view/loading-view.js';
+import FooterView from '../view/footer-view.js';
 import FilmPresenter from './film-presenter.js';
 import {render, remove, RenderPosition} from '../framework/render.js';
 import {sortingByRating, sortingByDate, sortingMostCommented} from '../utils/sorting.js';
 import {SortType, FilterType, UpdateType, UserAction, TimeLimit} from '../const.js';
-import {filter} from '../utils/filter.js';
+import {Filter} from '../utils/filter.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 
 const FILM_COUNT_PER_STEP = 5;
@@ -18,6 +19,7 @@ const EXTRA_CARDS_COUNT = 2;
 export default class GalleryPresenter {
   siteMainElement = document.querySelector('.main');
   siteHeaderElement = document.querySelector('.header');
+  siteBodyElement = document.querySelector('body');
   #filmModel = null;
   #commentModel = null;
   #filterModel = null;
@@ -25,11 +27,12 @@ export default class GalleryPresenter {
   #listTopRatedFilms = [];
   #listMostCommentedFilms = [];
   #galleryComponent= new FilmsListView();
-  #profileRatingComponent = new ProfileRatingView();
+  #profileRatingComponent = null;
   #loadingComponent = new LoadingView();
   #showMoreButtonComponent = null;
   #sortComponent = null;
   #noFilmComponent = null;
+  #footerComponent = null;
   #filmPresenter = new Map();
   #filterPresenter = null;
   #currentSortType = SortType.DEFAULT;
@@ -55,7 +58,7 @@ export default class GalleryPresenter {
     this.#currentFilterType = this.#filterModel.filter;
     const films = this.#filmModel.films;
     let currentFilms = films.slice();
-    currentFilms = filter[this.#currentFilterType](currentFilms);
+    currentFilms = Filter[this.#currentFilterType](currentFilms);
 
     switch(this.#currentSortType) {
       case SortType.BY_DATE:
@@ -85,15 +88,26 @@ export default class GalleryPresenter {
   };
 
   #renderMostCommentedFilms = (films) => {
-    films.forEach((film) => this.#renderFilm(this.#galleryComponent.element.querySelector('.films-list__container--most-commented'), film));
+    films.forEach((film) => {
+      if (film.comments.length === 0) {
+        return;
+      }
+      this.#renderFilm(this.#galleryComponent.element.querySelector('.films-list__container--most-commented'), film);
+    });
   };
 
   #renderMostRatingFilms = (films) => {
-    films.forEach((film) => this.#renderFilm(this.#galleryComponent.element.querySelector('.films-list__container--top-rated'), film));
+    films.forEach((film) => {
+      if (film.filmInfo.totalRating === 0) {
+        return;
+      }
+      this.#renderFilm(this.#galleryComponent.element.querySelector('.films-list__container--top-rated'), film);
+    });
   };
 
   #renderProfile = () => {
-    render(this.#profileRatingComponent, this.siteHeaderElement);
+    this.#profileRatingComponent = new ProfileRatingPresenter(this.siteHeaderElement, this.#filmModel);
+    this.#profileRatingComponent.init();
   };
 
   #renderFilters= () => {
@@ -227,11 +241,13 @@ export default class GalleryPresenter {
     this.#filmPresenter.clear();
 
     this.#filterPresenter.destroy();
+    this.#profileRatingComponent.destroy();
     remove(this.#sortComponent);
     remove(this.#noFilmComponent);
     remove(this.#loadingComponent);
     remove(this.#showMoreButtonComponent);
     remove(this.#galleryComponent);
+    remove(this.#footerComponent);
 
     if (resetRenderedFilmCount) {
       this.#renderedFilmCount = FILM_COUNT_PER_STEP;
@@ -253,6 +269,7 @@ export default class GalleryPresenter {
     const filmsCount = films.length;
     this.#listTopRatedFilms = films.slice().sort(sortingByRating).slice(0, EXTRA_CARDS_COUNT);
     this.#listMostCommentedFilms = films.slice().sort(sortingMostCommented).slice(0, EXTRA_CARDS_COUNT);
+    this.#footerComponent = new FooterView(filmsCount);
 
     render(this.#galleryComponent, this.siteMainElement);
 
@@ -263,6 +280,7 @@ export default class GalleryPresenter {
 
     if(filmsCount === 0) {
       this.#renderNoFilms();
+      this.#renderFilters();
       return;
     }
 
@@ -271,6 +289,7 @@ export default class GalleryPresenter {
     this.#renderFilters();
     this.#renderMostCommentedFilms(this.#listMostCommentedFilms);
     this.#renderMostRatingFilms(this.#listTopRatedFilms);
+    render(this.#footerComponent, this.siteBodyElement.querySelector('.footer__statistics'));
 
     // Теперь, когда #renderGallery рендерит доску не только на старте,
     // но и по ходу работы приложения, нужно заменить

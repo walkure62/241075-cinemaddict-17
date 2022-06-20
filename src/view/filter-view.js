@@ -38,6 +38,9 @@ export default class FilterView extends AbstractView {
   };
 
   #filterTypeChangeHandler = (evt) => {
+    if (evt.target.tagName !== 'A') {
+      return;
+    }
     this.element.querySelector('.main-navigation__item--active').classList.remove('main-navigation__item--active');
     evt.target.classList.add('main-navigation__item--active');
     evt.preventDefault();
