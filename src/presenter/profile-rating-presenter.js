@@ -20,9 +20,9 @@ export default class ProfileRatingPresenter {
   }
 
   init = () => {
-    const wathedFilmsCount = this.films;
+    const watchedFilmsCount = this.films;
     const prevUserProfileComponent = this.#userProfileComponent;
-    this.#userProfileComponent = new ProfileRatingView(wathedFilmsCount);
+    this.#userProfileComponent = new ProfileRatingView(watchedFilmsCount);
     if (!prevUserProfileComponent) {
       render(this.#userProfileComponent, this.#userProfileContainer);
       return;

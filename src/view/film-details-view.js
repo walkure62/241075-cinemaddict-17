@@ -117,7 +117,6 @@ export default class FilmDetailsView extends AbstractStatefulView {
   #clickCloseHandler = (evt) => {
     evt.preventDefault();
     this._callback.closeClick();
-    //this.element.remove();
   };
 
   #clickFavorite = (evt) => {
@@ -149,8 +148,6 @@ export default class FilmDetailsView extends AbstractStatefulView {
   _restoreHandlers = () => {
     this.#setInnerHandlers();
   };
-
-  static parseCommentToState = (comment) => this._state.comments.push(comment);
 
   static parseFilmToState = (film) => ({...film, emojiSelected: null, typedComment: null});
 }
