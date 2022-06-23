@@ -1,12 +1,7 @@
 import {render, replace, remove} from '../framework/render.js';
-import FilmCardView from '../view/films-card-view.js';
+import FilmCardView from '../view/film-card-view.js';
 import FilmDetailsPresenter from '../presenter/film-details-presenter.js';
 import {UserAction, UpdateType} from '../const.js';
-
-const Mode = {
-  DEFAULT: 'DEFAULT',
-  DETAILS: 'DETAILS',
-};
 
 export default class FilmPresenter {
   siteFooterElement = document.querySelector('.footer');
@@ -17,10 +12,8 @@ export default class FilmPresenter {
   #filmDetailsPresenter = null;
   #filmModel = null;
   #commentModel = null;
-  #commentsPresenter = null;
 
   #film = null;
-  #mode = Mode.DEFAULT;
   #listComments = [];
   #currentComments = [];
   #isDisabled = null;
