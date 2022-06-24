@@ -127,6 +127,10 @@ export default class CommentView extends AbstractStatefulView {
         updatedFilm,
         [newComment, newCommentContainer]
       );
+      filteredFilmCommentIds.push(newComment.id);
+      this._setState({
+        comments: filteredFilmCommentIds
+      });
     }
   };
 
